@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "drf-django"
+version = "0.1.0"
+description = ""
+authors = ["Your Name <you@example.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+config = "^0.5.1"
+django = "^5.0.4"
+loadenv = "^0.1.1"
+djangorestframework = "^3.15.1"
+python-dotenv = "^1.0.1"
+dj-database-url = "^2.1.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
