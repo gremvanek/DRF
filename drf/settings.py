@@ -125,7 +125,6 @@ MEDIA_ROOT = BASE_DIR / 'media'
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Настройки для Users
-USERNAME_FIELD = ['email']
 AUTH_USER_MODEL = 'users.User'
 AUTH_USER_NAME = 'email'
 LOGIN_REDIRECT_URL = '/'

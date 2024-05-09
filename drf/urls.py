@@ -3,5 +3,5 @@ from django.urls import path, include
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("lesson/", include("course.urls", namespace='lesson')),
+    path("lessons/", include("course.urls", namespace='lesson')),
 ]
