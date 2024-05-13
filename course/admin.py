@@ -4,9 +4,9 @@ from course.models import Course, Lesson
 
 @admin.register(Course)
 class AdminCourse(admin.ModelAdmin):
-    list_display = ('title', 'description', 'image', 'owner',)
+    list_display = ('name', 'description', 'preview', 'owner',)
 
 
 @admin.register(Lesson)
 class AdminLesson(admin.ModelAdmin):
-    list_display = ('title', 'description', 'image', 'link', 'course', 'owner',)
+    list_display = ('name', 'description', 'preview', 'link', 'course', 'owner',)
