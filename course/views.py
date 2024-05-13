@@ -2,11 +2,13 @@ from course.models import Course, Lesson
 from course.serializers import LessonSerializer, CourseSerializer
 
 from rest_framework import viewsets, generics
+from rest_framework.permissions import IsAuthenticated
 
 
 class CourseViewSet(viewsets.ModelViewSet):
     serializer_class = CourseSerializer
     queryset = Course.objects.all()
+    permission_classes = [IsAuthenticated]
 
 
 class LessonCreateAPIView(generics.CreateAPIView):
