@@ -2,8 +2,6 @@ from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-from course.models import Course, Lesson
-
 NULLABLE = {'blank': True, 'null': True}
 
 
@@ -35,14 +33,12 @@ class User(AbstractUser):
 class Payment(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='оплативший_пользователь')
     payment_date = models.DateField(auto_now_add=True, verbose_name='дата_оплаты')
-    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='оплаченный_курс', **NULLABLE)
-    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, related_name='оплаченный_урок', **NULLABLE)
     payment_sum = models.PositiveIntegerField(verbose_name='сумма_оплаты')
     payment_method = models.CharField(choices=[('1', 'Наличные'), ('2', 'Перевод')], verbose_name='способ_оплаты',
                                       max_length=10)
 
     def __str__(self):
-        return f"{self.user}: {self.course if self.course else self.lesson} - {self.payment_date}"
+        return f"{self.user} - {self.payment_date}"
 
     class Meta:
         verbose_name = 'платеж'
