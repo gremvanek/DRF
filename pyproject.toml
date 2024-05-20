@@ -20,6 +20,9 @@ flake8 = "^7.0.0"
 django-bootstrap4 = "^24.3"
 django-redis = "^5.4.0"
 pillow = "^10.3.0"
+djangorestframework-simplejwt = "^5.3.1"
+django-filter = "^24.2"
+datetime = "^5.5"
 
 
 [build-system]
