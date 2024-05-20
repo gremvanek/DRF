@@ -80,7 +80,14 @@ WSGI_APPLICATION = "drf.wsgi.application"
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
 DATABASES = {
-    'default': dj_database_url.config(default=os.getenv('DATABASE_URL'))
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': os.getenv('DB_NAME'),
+        'USER': os.getenv('DB_USER'),
+        'PASSWORD': os.getenv('DB_PASS'),
+        'HOST': os.getenv('DB_HOST'),
+        'PORT': os.getenv('DB_PORT'),
+    }
 }
 
 # Password validation
@@ -150,6 +157,9 @@ AUTH_USER_MODEL = 'users.User'
 AUTH_USER_NAME = 'email'
 LOGIN_REDIRECT_URL = '/'
 LOGOUT_REDIRECT_URL = '/'
+# Создание SU
+ROOT_EMAIL = os.getenv('ROOT_EMAIL')
+ROOT_PASSWORD = os.getenv('ROOT_PASSWORD')
 # Настройки для рассылки сообщений
 EMAIL_BACKEND = 'django_smtp_ssl.SSLEmailBackend'
 EMAIL_HOST = os.getenv('EMAIL_HOST')
