@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from course.models import Lesson, Course, Subscription
-from course.validators import TitleValidator, LinkValidator
+from course.validators import TitleValidator, LinkValidator, SubscriptionValidator
 
 
 class LessonSerializer(serializers.ModelSerializer):
