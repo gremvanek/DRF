@@ -1,5 +1,8 @@
 from django.conf import settings
 from django.db import models
+from django.utils import timezone
+
+from users.models import User
 
 NULLABLE = {'null': True, 'blank': True}
 
@@ -29,3 +32,9 @@ class Lesson(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class Subscription(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='Пользователь')
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, verbose_name='Курс')
+    subscribed_at = models.DateTimeField(default=timezone.now, verbose_name='Время подписки')
