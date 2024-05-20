@@ -1,7 +1,7 @@
 from rest_framework.permissions import IsAuthenticated
 
 from course.models import Course, Lesson
-from course.paginators import LessonPagination
+from course.paginators import LessonPagination, LearningPagination
 from course.permissions import IsModerator, IsOwner
 from course.serializers import LessonSerializer, CourseSerializer, SubscriptionSerializer
 from rest_framework.views import APIView
@@ -68,27 +68,32 @@ class LessonDestroyAPIView(generics.DestroyAPIView):
     permission_classes = [IsOwner]
 
 
-class SubscriptionCreateAPIView(APIView):
-    @staticmethod
-    def post(request, *args, **kwargs):
+class SubscriptionCreateAPIView(generics.CreateAPIView):
+    serializer_class = SubscriptionSerializer
+    queryset = Subscription.objects.all()
+    permission_classes = [IsOwner]
+
+    def create(self, request, *args, **kwargs):
         user = request.user
-        course_id = request.data.get('course_id')
+        course_id = request.data.get('course')
         course_item = get_object_or_404(Course, pk=course_id)
+        subscription_item = Subscription.objects.filter(user=user, course=course_item).first()
 
-        subs_item = Subscription.objects.filter(user=user, course=course_item)
-
-        if subs_item.exists():
-            subs_item.delete()
-            message = 'Subscription removed'
+        if subscription_item:
+            if subscription_item.owner == user:
+                subscription_item.delete()
+                message = 'подписка удалена'
+            else:
+                message = 'Вы не можете удалить подписку другого пользователя'
         else:
-            Subscription.objects.create(user=user, course=course_item)
-            message = 'Subscription added'
+            Subscription.objects.create(user=user, course=course_item, owner=user)
+            message = 'подписка добавлена'
 
-        return Response({"message": message})
+        return Response({'message': message})
 
 
 class SubscriptionListAPIView(generics.ListAPIView):
     serializer_class = SubscriptionSerializer
     queryset = Subscription.objects.all()
-    pagination_class = LessonPagination
+    pagination_class = LearningPagination
     permission_classes = [IsAuthenticated, IsOwner]

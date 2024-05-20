@@ -23,7 +23,7 @@ class LessonTestCase(APITestCase):
         data = {'name': 'Creating_test', 'description': 'Creating_test',
                 'course': self.course.id, 'link': 'https://test.youtube.com/',
                 'owner': self.user.id}
-        response = self.client.post('/lessons/lesson/create/', data=data, format='json')
+        response = self.client.post('/lesson/create/', data=data, format='json')
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertTrue(Lesson.objects.filter(name=data['name']).exists())
@@ -64,8 +64,8 @@ class SubscriptionTestCase(APITestCase):
     def setUp(self) -> None:
         self.client = APIClient()
         self.user = User.objects.create(
-            email='test@sky.pro',
-            password='test',
+            email='test1@test.sky.pro',
+            password='123test',
         )
 
         self.client.force_authenticate(user=self.user)
@@ -83,8 +83,12 @@ class SubscriptionTestCase(APITestCase):
         }
 
         response = self.client.post('/subscription/create/', data=data)
+        print(response.json())
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.json(), {'message': 'подписка добавлена'})
+        self.assertEqual(
+            response.json(),
+            {'message': 'подписка добавлена'}
+        )
 
     def test_list_subscription(self):
         response = self.client.get(reverse('course:subscription_list'))
@@ -99,7 +103,7 @@ class SubscriptionTestCase(APITestCase):
             'course': self.course.id,
         }
 
-        response = self.client.post('/lessons/subscription/create/', data=data)
+        response = self.client.post('/subscription/create/', data=data)
 
         self.assertEqual(
             response.json(),
@@ -107,7 +111,7 @@ class SubscriptionTestCase(APITestCase):
         )
         print(response.json())
 
-        response = self.client.post('/lessons/subscription/create/', data=data)
+        response = self.client.post('/subscription/create/', data=data)
         self.assertEqual(
             response.json(),
             {'message': 'подписка удалена'}

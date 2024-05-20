@@ -1,3 +1,4 @@
+# course\urls.py
 from django.urls import path
 from rest_framework.routers import DefaultRouter
 
@@ -17,6 +18,6 @@ urlpatterns = [
     path('lesson/update/<int:pk>/', LessonUpdateAPIView.as_view(), name='lesson_update'),
     path('lesson/delete/<int:pk>/', LessonDestroyAPIView.as_view(), name='lesson_delete'),
 
-    path('subscription/', SubscriptionListAPIView.as_view(), name='subscription_list'),
     path('subscription/create/', SubscriptionCreateAPIView.as_view(), name='subscription_create'),
+    path('subscription/', SubscriptionListAPIView.as_view(), name='subscription_list'),
 ] + router.urls
