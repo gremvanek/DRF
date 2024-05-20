@@ -2,7 +2,10 @@ from course.models import Course, Lesson
 from course.paginators import LessonPagination
 from course.permissions import IsModerator, IsOwner
 from course.serializers import LessonSerializer, CourseSerializer
-
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from django.shortcuts import get_object_or_404
+from .models import Subscription
 from rest_framework import viewsets, generics
 
 
@@ -61,3 +64,22 @@ class LessonUpdateAPIView(generics.UpdateAPIView):
 class LessonDestroyAPIView(generics.DestroyAPIView):
     queryset = Lesson.objects.all()
     permission_classes = [IsOwner]
+
+
+class SubscriptionView(APIView):
+    @staticmethod
+    def post(request, *args, **kwargs):
+        user = request.user
+        course_id = request.data.get('course_id')
+        course_item = get_object_or_404(Course, pk=course_id)
+
+        subs_item = Subscription.objects.filter(user=user, course=course_item)
+
+        if subs_item.exists():
+            subs_item.delete()
+            message = 'Subscription removed'
+        else:
+            Subscription.objects.create(user=user, course=course_item)
+            message = 'Subscription added'
+
+        return Response({"message": message})
