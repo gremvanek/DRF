@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from course.models import Lesson, Course
+from course.models import Lesson, Course, Subscription
 from course.validators import TitleValidator, LinkValidator
 
 
@@ -29,4 +29,13 @@ class CourseSerializer(serializers.ModelSerializer):
             LinkValidator('video_url'),
             LinkValidator('link'),
             serializers.UniqueTogetherValidator(fields=['name'], queryset=Lesson.objects.all()),
+        ]
+
+
+class SubscriptionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Subscription
+        fields = '__all__'
+        validators = [
+            SubscriptionValidator(),
         ]

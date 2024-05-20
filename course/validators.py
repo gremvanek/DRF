@@ -1,6 +1,8 @@
 import re
 from rest_framework.serializers import ValidationError
 
+from course.models import Subscription
+
 
 class TitleValidator:
 
@@ -32,3 +34,12 @@ class LinkValidator:
             '(watch\?v=|embed/|v/|.+\?v=)?([^&=%\?]{11})'
         )
         return re.match(youtube_regex, link)
+
+
+class SubscriptionValidator:
+    def __call__(self, attrs):
+        user = attrs.get('user')
+        course = attrs.get('course')
+        owner = attrs.get('owner')
+        if user and course and owner and Subscription.objects.filter(user=user, course=course, owner=owner).exists():
+            raise ValidationError('Вы уже подписаны на этот курс')

@@ -1,7 +1,9 @@
+from rest_framework.permissions import IsAuthenticated
+
 from course.models import Course, Lesson
 from course.paginators import LessonPagination
 from course.permissions import IsModerator, IsOwner
-from course.serializers import LessonSerializer, CourseSerializer
+from course.serializers import LessonSerializer, CourseSerializer, SubscriptionSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
@@ -66,7 +68,7 @@ class LessonDestroyAPIView(generics.DestroyAPIView):
     permission_classes = [IsOwner]
 
 
-class SubscriptionView(APIView):
+class SubscriptionCreateAPIView(APIView):
     @staticmethod
     def post(request, *args, **kwargs):
         user = request.user
@@ -83,3 +85,10 @@ class SubscriptionView(APIView):
             message = 'Subscription added'
 
         return Response({"message": message})
+
+
+class SubscriptionListAPIView(generics.ListAPIView):
+    serializer_class = SubscriptionSerializer
+    queryset = Subscription.objects.all()
+    pagination_class = LessonPagination
+    permission_classes = [IsAuthenticated, IsOwner]
