@@ -1,4 +1,5 @@
 from course.models import Course, Lesson
+from course.paginators import LessonPagination
 from course.permissions import IsModerator, IsOwner
 from course.serializers import LessonSerializer, CourseSerializer
 
@@ -42,6 +43,7 @@ class LessonListAPIView(generics.ListCreateAPIView):
     serializer_class = LessonSerializer
     queryset = Lesson.objects.all()
     permission_classes = [IsModerator | IsOwner]
+    pagination_class = LessonPagination
 
 
 class LessonRetrieveAPIView(generics.RetrieveAPIView):

@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from course.models import Lesson, Course
-from course.validators import TitleValidator
+from course.validators import TitleValidator, LinkValidator
 
 
 class LessonSerializer(serializers.ModelSerializer):
@@ -26,5 +26,7 @@ class CourseSerializer(serializers.ModelSerializer):
         fields = '__all__'
         validators = [
             TitleValidator(field='name'),
+            LinkValidator('video_url'),
+            LinkValidator('link'),
             serializers.UniqueTogetherValidator(fields=['name'], queryset=Lesson.objects.all()),
         ]

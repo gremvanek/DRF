@@ -12,3 +12,23 @@ class TitleValidator:
         tmp_val = dict(value).get(self.field)
         if not bool(reg.match(tmp_val)):
             raise ValidationError('Title is not ok')
+
+
+class LinkValidator:
+    def __init__(self, field):
+        self.field = field
+
+    def __call__(self, value):
+        links = value.get(self.field, [])
+        for link in links:
+            if not self.is_youtube_link(link):
+                raise ValidationError("Only YouTube links are allowed")
+
+    @staticmethod
+    def is_youtube_link(link):
+        youtube_regex = (
+            r'(https?://)?(www\.)?'
+            '(youtube|youtu|youtube-nocookie)\.(com|be)/'
+            '(watch\?v=|embed/|v/|.+\?v=)?([^&=%\?]{11})'
+        )
+        return re.match(youtube_regex, link)
