@@ -30,8 +30,8 @@ class LinkValidator:
     def is_youtube_link(link):
         youtube_regex = (
             r'(https?://)?(www\.)?'
-            '(youtube|youtu|youtube-nocookie)\.(com|be)/'
-            '(watch\?v=|embed/|v/|.+\?v=)?([^&=%\?]{11})'
+            r'(youtube|youtu|youtube-nocookie)\.(com|be)/'
+            r'(watch\?v=|embed/|v/|.+\?v=)?([^&=%\?]{11})'
         )
         return re.match(youtube_regex, link)
 

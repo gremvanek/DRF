@@ -4,7 +4,6 @@ from course.models import Course, Lesson
 from course.paginators import LessonPagination, LearningPagination
 from course.permissions import IsModerator, IsOwner
 from course.serializers import LessonSerializer, CourseSerializer, SubscriptionSerializer
-from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from .models import Subscription
