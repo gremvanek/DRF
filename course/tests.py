@@ -20,7 +20,7 @@ class LessonTestCase(APITestCase):
 
     def test_create_lesson(self):
         """Тестирование создания урока"""
-        data = {'name': 'Creating_test', 'description': 'Creating_test',
+        data = {'name': 'creating1test', 'description': 'Creating_test',
                 'course': self.course.id, 'link': 'https://test.youtube.com/',
                 'owner': self.user.id}
         response = self.client.post('/lesson/create/', data=data, format='json')
@@ -39,7 +39,7 @@ class LessonTestCase(APITestCase):
     def test_update_lesson(self):
         """Тестирование редактирования урока"""
         path = reverse('course:lesson_update', [self.lesson.id])
-        data = {'name': 'Updating_test', 'description': 'Updating_test'}
+        data = {'name': 'updating1test', 'description': 'Updating_test'}
         response = self.client.patch(path, data=data)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
