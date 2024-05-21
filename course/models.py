@@ -23,7 +23,6 @@ class Lesson(models.Model):
     name = models.CharField(max_length=50, verbose_name='Название урока')
     description = models.TextField(max_length=255, verbose_name='Описание урока', **NULLABLE)
     preview = models.ImageField(upload_to='lessons/', verbose_name='Превью', **NULLABLE)
-    link = models.URLField(verbose_name='ссылка_на_видео', **NULLABLE)
     video_url = models.URLField(verbose_name='URL видео', **NULLABLE)
     course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='lessons', **NULLABLE)
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, **NULLABLE)
@@ -35,9 +34,7 @@ class Lesson(models.Model):
 class Subscription(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name='пользователь',
                              **NULLABLE)
-    course = models.ForeignKey(Course, on_delete=models.CASCADE, verbose_name='курс', **NULLABLE)
-    owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='subscriptions',
-                              verbose_name='владелец', **NULLABLE)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, verbose_name='курс')
 
     def __str__(self):
         return f'{self.user} - {self.course}'
