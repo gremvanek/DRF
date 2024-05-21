@@ -10,18 +10,18 @@ class LessonTestCase(APITestCase):
     def setUp(self) -> None:
         self.client = APIClient()
         """Создание и авторизация тестового пользователя"""
-        self.user = User.objects.create(id=1, email='user@test.ru', password='12345')
+        self.user = User.objects.create(id=1, email='user@test.ru')
         self.client.force_authenticate(user=self.user)
         """Создание тестовых курса и урока"""
         self.course = Course.objects.create(name='test_course', description='test_description')
         self.lesson = Lesson.objects.create(name='test_lesson', description='test_description',
-                                            course=self.course, link='https://test.youtube.com/',
+                                            course=self.course, video_url='https://test.youtube.com/',
                                             owner=self.user)
 
     def test_create_lesson(self):
         """Тестирование создания урока"""
         data = {'name': 'creating1test', 'description': 'Creating_test',
-                'course': self.course.id, 'link': 'https://test.youtube.com/',
+                'course': self.course.id, 'video_url': 'https://test.youtube.com/',
                 'owner': self.user.id}
         response = self.client.post('/lesson/create/', data=data, format='json')
 
@@ -73,7 +73,6 @@ class SubscriptionTestCase(APITestCase):
         self.course = Course.objects.create(
             name='test',
             description='test',
-            owner=self.user
         )
 
     def test_create_subscription(self):

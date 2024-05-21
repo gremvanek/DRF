@@ -70,7 +70,6 @@ class LessonDestroyAPIView(generics.DestroyAPIView):
 class SubscriptionCreateAPIView(generics.CreateAPIView):
     serializer_class = SubscriptionSerializer
     queryset = Subscription.objects.all()
-    permission_classes = [IsOwner]
 
     def create(self, request, *args, **kwargs):
         user = request.user
@@ -79,13 +78,10 @@ class SubscriptionCreateAPIView(generics.CreateAPIView):
         subscription_item = Subscription.objects.filter(user=user, course=course_item).first()
 
         if subscription_item:
-            if subscription_item.owner == user:
-                subscription_item.delete()
-                message = 'подписка удалена'
-            else:
-                message = 'Вы не можете удалить подписку другого пользователя'
+            subscription_item.delete()
+            message = 'подписка удалена'
         else:
-            Subscription.objects.create(user=user, course=course_item, owner=user)
+            Subscription.objects.create(user=user, course=course_item)
             message = 'подписка добавлена'
 
         return Response({'message': message})
