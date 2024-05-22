@@ -44,3 +44,23 @@ class Subscription(models.Model):
     class Meta:
         verbose_name = 'подписка'
         verbose_name_plural = 'подписки'
+
+
+class Product(models.Model):
+    name = models.CharField(max_length=255)
+    description = models.TextField()
+    stripe_product_id = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
+
+
+class Payment(models.Model):
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    amount = models.IntegerField()
+    stripe_price_id = models.CharField(max_length=255)
+    stripe_checkout_session_id = models.CharField(max_length=255)
+    stripe_payment_url = models.URLField(max_length=200)
+
+    def __str__(self):
+        return f"Оплата за {self.product.name}"
