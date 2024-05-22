@@ -80,6 +80,7 @@ class LessonUpdateAPIView(generics.UpdateAPIView):
 class LessonDestroyAPIView(generics.DestroyAPIView):
     queryset = Lesson.objects.all()
     permission_classes = [IsAuthenticated & IsOwner]
+    serializer_class = LessonSerializer
 
 
 class SubscriptionCreateAPIView(generics.CreateAPIView):
