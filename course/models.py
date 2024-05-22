@@ -18,6 +18,9 @@ class Course(models.Model):
         verbose_name = 'Курс'
         verbose_name_plural = 'Курсы'
 
+    def filter_by_lesson(self, queryset, name, value):
+        return queryset.filter(lesson_name=value)
+
 
 class Lesson(models.Model):
     name = models.CharField(max_length=50, verbose_name='Название урока')
