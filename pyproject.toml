@@ -27,6 +27,7 @@ drf-spectacular = {extras = ["sidecar"], version = "^0.27.2"}
 pytest = "^8.2.1"
 pytest-django = "^4.8.0"
 requests-mock = "^1.12.1"
+stripe = "^9.7.0"
 
 
 [build-system]

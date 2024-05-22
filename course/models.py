@@ -5,6 +5,7 @@ NULLABLE = {'null': True, 'blank': True}
 
 
 class Course(models.Model):
+    objects = models.Manager()
     name = models.CharField(max_length=50, verbose_name='Название курса')
     preview = models.ImageField(upload_to='courses/', verbose_name='Превью', **NULLABLE)
     description = models.TextField(max_length=255, verbose_name='Описание курса', **NULLABLE)
@@ -22,6 +23,7 @@ class Course(models.Model):
 
 
 class Lesson(models.Model):
+    objects = models.Manager()
     name = models.CharField(max_length=50, verbose_name='Название урока')
     description = models.TextField(max_length=255, verbose_name='Описание урока', **NULLABLE)
     preview = models.ImageField(upload_to='lessons/', verbose_name='Превью', **NULLABLE)
@@ -35,7 +37,9 @@ class Lesson(models.Model):
 
 
 class Subscription(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name='пользователь', **NULLABLE)
+    objects = models.Manager()
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name='пользователь',
+                             **NULLABLE)
     course = models.ForeignKey(Course, on_delete=models.CASCADE, verbose_name='курс')
 
     def __str__(self):
@@ -47,6 +51,7 @@ class Subscription(models.Model):
 
 
 class Product(models.Model):
+    objects = models.Manager()
     name = models.CharField(max_length=255)
     description = models.TextField()
     stripe_product_id = models.CharField(max_length=255)
@@ -56,6 +61,7 @@ class Product(models.Model):
 
 
 class Payment(models.Model):
+    objects = models.Manager()
     product = models.ForeignKey(Product, on_delete=models.CASCADE)
     amount = models.IntegerField()
     stripe_price_id = models.CharField(max_length=255)
