@@ -30,11 +30,19 @@ class LessonTestCase(APITestCase):
 
     def test_retrieve_lesson(self):
         """Тестирование просмотра информации об уроке"""
-        path = reverse('course:lesson_get', [self.lesson.id])
+        path = reverse('course:lesson_get', args=[self.lesson.id])
         response = self.client.get(path)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data['name'], self.lesson.name)
+
+    def test_retrieve_nonexistent_lesson(self):
+        """Тестирование запроса несуществующего урока"""
+        nonexistent_lesson_id = 9999  # ID, которого нет в базе данных
+        path = reverse('course:lesson_get', args=[nonexistent_lesson_id])
+        response = self.client.get(path)
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_update_lesson(self):
         """Тестирование редактирования урока"""
@@ -83,7 +91,7 @@ class SubscriptionTestCase(APITestCase):
 
         response = self.client.post('/subscription/create/', data=data)
         print(response.json())
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(
             response.json(),
             {'message': 'подписка добавлена'}
@@ -103,7 +111,6 @@ class SubscriptionTestCase(APITestCase):
         }
 
         response = self.client.post('/subscription/create/', data=data)
-
         self.assertEqual(
             response.json(),
             {'message': 'подписка добавлена'}
@@ -111,8 +118,6 @@ class SubscriptionTestCase(APITestCase):
         print(response.json())
 
         response = self.client.post('/subscription/create/', data=data)
-        self.assertEqual(
-            response.json(),
-            {'message': 'подписка удалена'}
-        )
-        print(response.json())
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(response.data, {'message': 'подписка удалена'})
+        print(response.content)
