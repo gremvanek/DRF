@@ -29,14 +29,6 @@ class UserViewSet(viewsets.ModelViewSet):
         return permission_classes
 
 
-class PaymentListAPIView(generics.ListAPIView):
-    serializer_class = PaymentSerializer
-    queryset = Payment.objects.all()
-    filter_backends = [DjangoFilterBackend, OrderingFilter]
-    filterset_fields = ('course', 'lesson', 'payment_method',)
-    ordering_fields = ('payment_date',)
-
-
 class UserProfileAPIView(generics.RetrieveAPIView):
     serializer_class = UserProfileSerializer
     queryset = User.objects.all()

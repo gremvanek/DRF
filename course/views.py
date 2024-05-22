@@ -1,14 +1,17 @@
 from django.shortcuts import get_object_or_404
+from django.utils.decorators import method_decorator
 from django_filters import rest_framework as filters
+from drf_yasg.utils import swagger_auto_schema
 from rest_framework import viewsets, generics
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, BasePermission
 from rest_framework.response import Response
 
 from course.models import Course, Lesson
 from course.paginators import LessonPagination, LearningPagination
 from course.permissions import IsModerator, IsOwner
-from course.serializers import LessonSerializer, CourseSerializer, SubscriptionSerializer
+# from course.serializers import SubscriptionSerializer
 from .models import Subscription
+from .serializers import CourseSerializer, LessonSerializer, SubscriptionSerializer
 
 
 class CourseFilter(filters.FilterSet):
@@ -25,6 +28,12 @@ class LessonFilter(filters.FilterSet):
         fields = ['name']
 
 
+class IsNotModerator(BasePermission):
+    def has_permission(self, request, view):
+        return not request.user.is_moderator
+
+
+@method_decorator(name='list', decorator=swagger_auto_schema(operation_description='Показ списка курсов'))
 class CourseViewSet(viewsets.ModelViewSet):
     serializer_class = CourseSerializer
     queryset = Course.objects.all()
@@ -34,7 +43,7 @@ class CourseViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         if self.action == 'create':
-            permission_classes = [IsAuthenticated & ~IsModerator]
+            permission_classes = [IsAuthenticated, IsNotModerator]
         else:
             permission_classes = [IsAuthenticated & (IsModerator | IsOwner)]
         return [permission() for permission in permission_classes]
@@ -53,7 +62,7 @@ class LessonListAPIView(generics.ListCreateAPIView):
     queryset = Lesson.objects.all()
     permission_classes = [IsAuthenticated & (IsModerator | IsOwner)]
     pagination_class = LessonPagination
-    filterset_class = LessonFilter
+    # filterset_class = LessonFilter
 
 
 class LessonRetrieveAPIView(generics.RetrieveAPIView):

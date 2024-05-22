@@ -1,7 +1,6 @@
 from django.conf import settings
 from django.db import models
 
-
 NULLABLE = {'null': True, 'blank': True}
 
 
@@ -19,7 +18,7 @@ class Course(models.Model):
         verbose_name_plural = 'Курсы'
 
     def filter_by_lesson(self, queryset, name, value):
-        return queryset.filter(lesson_name=value)
+        return queryset.filter(lessons__name=value)
 
 
 class Lesson(models.Model):
@@ -27,7 +26,8 @@ class Lesson(models.Model):
     description = models.TextField(max_length=255, verbose_name='Описание урока', **NULLABLE)
     preview = models.ImageField(upload_to='lessons/', verbose_name='Превью', **NULLABLE)
     video_url = models.URLField(verbose_name='URL видео', **NULLABLE)
-    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='lessons', **NULLABLE)
+    link = models.URLField(verbose_name='Ссылка', **NULLABLE)  # Добавлено поле link
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, verbose_name='lessons')
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, **NULLABLE)
 
     def __str__(self):
@@ -35,8 +35,7 @@ class Lesson(models.Model):
 
 
 class Subscription(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name='пользователь',
-                             **NULLABLE)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name='пользователь', **NULLABLE)
     course = models.ForeignKey(Course, on_delete=models.CASCADE, verbose_name='курс')
 
     def __str__(self):
