@@ -5,12 +5,13 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 from users.apps import UsersConfig
-from users.views import UserViewSet, UserProfileAPIView
+from users.views import UserViewSet, UserProfileAPIView, PaymentViewSet
 
 app_name = UsersConfig.name
 
 router = DefaultRouter()
 router.register(r'', UserViewSet, basename='users')
+router.register(r'payments', PaymentViewSet, basename='payment')
 
 urlpatterns = [
     path('user_detail/<int:pk>/', UserProfileAPIView.as_view(), name='user_detail'),

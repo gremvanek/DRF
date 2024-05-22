@@ -31,6 +31,7 @@ class User(AbstractUser):
 
 
 class Payment(models.Model):
+    objects = models.Manager()
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='оплативший_пользователь')
     payment_date = models.DateField(auto_now_add=True, verbose_name='дата_оплаты')
     payment_sum = models.PositiveIntegerField(verbose_name='сумма_оплаты')

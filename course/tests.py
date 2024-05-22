@@ -1,7 +1,6 @@
 from rest_framework import status
-from rest_framework.reverse import reverse
 from rest_framework.test import APITestCase, APIClient
-
+from django.urls import reverse
 from course.models import Course, Lesson
 from users.models import User
 
@@ -30,7 +29,7 @@ class LessonTestCase(APITestCase):
 
     def test_retrieve_lesson(self):
         """Тестирование просмотра информации об уроке"""
-        path = reverse('course:lesson_get', [self.lesson.id])
+        path = reverse('course:lesson_get', kwargs={'pk': self.lesson.pk})
         response = self.client.get(path)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
@@ -38,7 +37,7 @@ class LessonTestCase(APITestCase):
 
     def test_update_lesson(self):
         """Тестирование редактирования урока"""
-        path = reverse('course:lesson_update', [self.lesson.id])
+        path = reverse('course:lesson_update', kwargs={'pk': self.lesson.pk})
         data = {'name': 'updating1test', 'description': 'Updating_test'}
         response = self.client.patch(path, data=data)
 
@@ -53,7 +52,7 @@ class LessonTestCase(APITestCase):
                                         password='12345', role='moderator')
         self.client.force_authenticate(user=moderator)
 
-        path = reverse('course:lesson_delete', [self.lesson.id])
+        path = reverse('course:lesson_delete', kwargs={'pk': self.lesson.pk})
         response = self.client.delete(path)
 
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
