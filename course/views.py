@@ -1,4 +1,5 @@
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.status import HTTP_204_NO_CONTENT, HTTP_201_CREATED
 
 from course.models import Course, Lesson
 from course.paginators import LessonPagination, LearningPagination
@@ -80,11 +81,13 @@ class SubscriptionCreateAPIView(generics.CreateAPIView):
         if subscription_item:
             subscription_item.delete()
             message = 'подписка удалена'
+            status = HTTP_204_NO_CONTENT
         else:
             Subscription.objects.create(user=user, course=course_item)
             message = 'подписка добавлена'
+            status = HTTP_201_CREATED
 
-        return Response({'message': message})
+        return Response({'message': message}, status=status)
 
 
 class SubscriptionListAPIView(generics.ListAPIView):
