@@ -1,0 +1,51 @@
+[
+{
+  "model": "course.course",
+  "pk": 6,
+  "fields": {
+    "name": "Java",
+    "preview": "",
+    "description": null,
+    "owner": null
+  }
+},
+{
+  "model": "course.lesson",
+  "pk": 3,
+  "fields": {
+    "name": "e12dd",
+    "description": null,
+    "preview": "",
+    "link": null,
+    "video_url": null,
+    "course": null,
+    "owner": 1
+  }
+},
+{
+  "model": "course.lesson",
+  "pk": 4,
+  "fields": {
+    "name": "Not Java",
+    "description": null,
+    "preview": "",
+    "link": null,
+    "video_url": null,
+    "course": null,
+    "owner": null
+  }
+},
+{
+  "model": "course.lesson",
+  "pk": 5,
+  "fields": {
+    "name": "Idontknow",
+    "description": null,
+    "preview": "",
+    "link": null,
+    "video_url": null,
+    "course": null,
+    "owner": null
+  }
+}
+]

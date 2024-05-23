@@ -1,4 +1,5 @@
 from django.contrib import admin
+
 from users.models import User, Payment
 
 
@@ -9,4 +10,4 @@ class AdminUser(admin.ModelAdmin):
 
 @admin.register(Payment)
 class AdminPayment(admin.ModelAdmin):
-    list_display = ('user', 'payment_date', 'course', 'lesson', 'payment_sum',)
+    list_display = ('user', 'payment_date', 'payment_sum', 'payment_method',)

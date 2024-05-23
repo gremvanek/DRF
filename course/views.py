@@ -1,7 +1,13 @@
-from course.models import Course, Lesson
-from course.permissions import IsModerator, IsOwner
-from course.serializers import LessonSerializer, CourseSerializer
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.status import HTTP_204_NO_CONTENT, HTTP_201_CREATED
 
+from course.models import Course, Lesson
+from course.paginators import LessonPagination, LearningPagination
+from course.permissions import IsModerator, IsOwner
+from course.serializers import LessonSerializer, CourseSerializer, SubscriptionSerializer
+from rest_framework.response import Response
+from django.shortcuts import get_object_or_404
+from .models import Subscription
 from rest_framework import viewsets, generics
 
 
@@ -42,6 +48,7 @@ class LessonListAPIView(generics.ListCreateAPIView):
     serializer_class = LessonSerializer
     queryset = Lesson.objects.all()
     permission_classes = [IsModerator | IsOwner]
+    pagination_class = LessonPagination
 
 
 class LessonRetrieveAPIView(generics.RetrieveAPIView):
@@ -59,3 +66,32 @@ class LessonUpdateAPIView(generics.UpdateAPIView):
 class LessonDestroyAPIView(generics.DestroyAPIView):
     queryset = Lesson.objects.all()
     permission_classes = [IsOwner]
+
+
+class SubscriptionCreateAPIView(generics.CreateAPIView):
+    serializer_class = SubscriptionSerializer
+    queryset = Subscription.objects.all()
+
+    def create(self, request, *args, **kwargs):
+        user = request.user
+        course_id = request.data.get('course')
+        course_item = get_object_or_404(Course, pk=course_id)
+        subscription_item = Subscription.objects.filter(user=user, course=course_item).first()
+
+        if subscription_item:
+            subscription_item.delete()
+            message = 'подписка удалена'
+            status = HTTP_204_NO_CONTENT
+        else:
+            Subscription.objects.create(user=user, course=course_item)
+            message = 'подписка добавлена'
+            status = HTTP_201_CREATED
+
+        return Response({'message': message}, status=status)
+
+
+class SubscriptionListAPIView(generics.ListAPIView):
+    serializer_class = SubscriptionSerializer
+    queryset = Subscription.objects.all()
+    pagination_class = LearningPagination
+    permission_classes = [IsAuthenticated, IsOwner]
