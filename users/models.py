@@ -7,6 +7,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 
 from course.models import Course, Lesson
+from drf import settings
 
 NULLABLE = {"blank": True, "null": True}
 
@@ -19,7 +20,7 @@ class UserRoles(models.TextChoices):
 class UserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
         if not email:
-            raise ValueError("The Email field must be set")
+            raise ValueError('The Email field must be set')
         email = self.normalize_email(email)
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
@@ -27,8 +28,14 @@ class UserManager(BaseUserManager):
         return user
 
     def create_superuser(self, email, password=None, **extra_fields):
-        extra_fields.setdefault("is_staff", True)
-        extra_fields.setdefault("is_superuser", True)
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+
+        if extra_fields.get('is_staff') is not True:
+            raise ValueError('Superuser must have is_staff=True.')
+        if extra_fields.get('is_superuser') is not True:
+            raise ValueError('Superuser must have is_superuser=True.')
+
         return self.create_user(email, password, **extra_fields)
 
 
@@ -38,6 +45,7 @@ class User(AbstractUser):
     phone = models.CharField(max_length=12, **NULLABLE, verbose_name="телефон")
     city = models.CharField(max_length=100, **NULLABLE, verbose_name="город")
     avatar = models.ImageField(upload_to="users/", **NULLABLE, verbose_name="аватарка")
+    is_moderator = models.BooleanField(verbose_name='Модератор', **NULLABLE)
     role = models.CharField(
         max_length=20,
         choices=UserRoles.choices,
@@ -48,8 +56,10 @@ class User(AbstractUser):
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
 
+    objects = UserManager()
+
     def __str__(self):
-        return f"{self.email}"
+        return self.email
 
     class Meta:
         verbose_name = "пользователь"
@@ -60,20 +70,21 @@ class User(AbstractUser):
 class Payment(models.Model):
     objects = models.Manager()
     user = models.ForeignKey(
-        User,
+        settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         verbose_name="оплативший_пользователь",
         related_name="the_user",
+        **NULLABLE,
     )
     course = models.ForeignKey(
-        Course,
+        'course.Course',
         on_delete=models.CASCADE,
         verbose_name="оплаченный курс",
         related_name="courses",
         **NULLABLE,
     )
     lesson = models.ForeignKey(
-        Lesson,
+        'course.Lesson',
         on_delete=models.CASCADE,
         verbose_name="оплаченный урок",
         related_name="lessons",
@@ -86,7 +97,6 @@ class Payment(models.Model):
         verbose_name="способ_оплаты",
         max_length=10,
     )
-
     is_paid = models.BooleanField(default=False, verbose_name="статус оплаты")
     session_id = models.CharField(
         max_length=180, verbose_name="сессия для оплаты", **NULLABLE, help_text='Укажите id сессии'
@@ -94,7 +104,7 @@ class Payment(models.Model):
     link = models.URLField(
         max_length=400,
         **NULLABLE,
-        verbose_name='Сслыка для оплаты',
+        verbose_name='Ссылка для оплаты',
         help_text='Укажите ссылку для оплаты'
     )
 
@@ -105,39 +115,3 @@ class Payment(models.Model):
         verbose_name = "платеж"
         verbose_name_plural = "платежи"
         ordering = ("-payment_date",)
-
-    def create_checkout_session(self, product_name, price, success_url, cancel_url):
-        stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
-
-        # Создание продукта
-        product = stripe.Product.create(
-            name=product_name,
-            type="service",
-        )
-
-        # Создание цены
-        price = stripe.Price.create(
-            product=product.id,
-            unit_amount=price,
-            currency="usd",  # Или другая валюта
-        )
-
-        # Создание сессии для оплаты
-        session = stripe.checkout.Session.create(
-            payment_method_types=["card"],
-            line_items=[
-                {
-                    "price": price.id,
-                    "quantity": 1,
-                }
-            ],
-            mode="payment",
-            success_url=success_url,
-            cancel_url=cancel_url,
-        )
-
-        # Сохранение id сессии в поле модели
-        self.session = session.id
-        self.save()
-
-        return session.id

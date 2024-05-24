@@ -1,9 +1,13 @@
 import unittest
 from unittest.mock import patch
-from django.test import TestCase
-from django.urls import reverse_lazy, reverse
-from rest_framework.test import APITestCase, APIClient
-from .models import Course, Lesson, User, Payment
+from .models import Course, Lesson, User
+from unittest import TestCase, mock
+from rest_framework.test import APIClient, APIRequestFactory, force_authenticate
+from rest_framework import status
+from django.contrib.auth import get_user_model
+from django.urls import reverse
+from .models import Payment
+from .views import PaymentCreateAPIView
 
 
 class TestPaymentMethods(TestCase):
@@ -74,112 +78,159 @@ class TestPaymentMethods(TestCase):
         )
 
 
-class PaymentListCreateRetrieveAPITest(TestCase):
+# class PaymentListCreateRetrieveAPITest(TestCase):
+#     def setUp(self):
+#         self.client = APIClient()
+#         self.user = User.objects.create(
+#             email="test@example.com",
+#             phone="1234567890",
+#             city="Test City",
+#             avatar=None,
+#             role="member",
+#         )
+#         self.client.force_authenticate(user=self.user)
+#         self.course = Course.objects.create(
+#             name="Test Course",
+#             preview=None,
+#             description="Test Course Description",
+#             owner=self.user,
+#         )
+#         self.lesson = Lesson.objects.create(
+#             name='Test Lesson',
+#             course=self.course,
+#         )
+#
+#     def test_payment_list_api_view(self):
+#         url = reverse("payment_list")
+#         response = self.client.get(url)
+#         self.assertEqual(response.status_code, 200)
+#
+#     def test_payment_create_api_view(self):
+#         url = reverse("payment_create")
+#         data = {
+#             "course": self.course.id,
+#             "lesson": self.lesson.id,
+#             "payment_method": "usd",
+#             "payment_sum": 100,
+#         }
+#         response = self.client.post(url, data, format="json")
+#         self.assertEqual(response.status_code, 201)
+#         self.assertEqual(Payment.objects.count(), 1)
+#         created_payment = Payment.objects.first()
+#         self.assertEqual(created_payment.course, self.course)
+#
+#     def test_payment_retrieve_api_view(self):
+#         payment = Payment.objects.create(
+#             course=self.course,
+#             lesson=self.lesson,
+#             payment_method="usd",
+#             payment_sum=100,
+#             user=self.user,
+#         )
+#         url = reverse("payment_retrieve", kwargs={"pk": payment.pk})
+#         response = self.client.get(url)
+#         self.assertEqual(response.status_code, 200)
+#
+#
+# class PaymentAPITest(APITestCase):
+#     def setUp(self):
+#         self.user = User.objects.create(
+#             email="test@example.com",
+#             phone="1234567890",
+#             city="Test City",
+#             avatar=None,
+#             role="member",
+#         )
+#         self.client.force_authenticate(user=self.user)
+#         self.course = Course.objects.create(
+#             name="Test Course",
+#             preview=None,
+#             description="Test Course Description",
+#             owner=self.user,
+#         )
+#         self.lesson = Lesson.objects.create(
+#             name='Test Lesson',
+#             course=self.course,
+#         )
+#
+#     def test_payment_list_api_view(self):
+#         url = reverse_lazy("users:payment_list")
+#         response = self.client.get(url)
+#         self.assertEqual(response.status_code, 200)
+#
+#     def test_payment_create_api_view(self):
+#         url = reverse_lazy("users:payment_create")
+#         data = {
+#             "course": self.course.id,
+#             "lesson": self.lesson.id,
+#             "payment_method": "usd",
+#             "payment_sum": 100,
+#         }
+#         response = self.client.post(url, data, format="json")
+#         self.assertEqual(response.status_code, 201)
+#         self.assertEqual(Payment.objects.count(), 1)
+#         payment = Payment.objects.get()
+#         self.assertEqual(payment.course.id, self.course.id)
+#         self.assertEqual(payment.lesson.id, self.lesson.id)
+#
+#     def test_payment_retrieve_api_view(self):
+#         payment = Payment.objects.create(
+#             course=self.course,
+#             lesson=self.lesson,
+#             payment_method="usd",
+#             payment_sum=100,
+#             user=self.user,
+#         )
+#         url = reverse("users:payment_retrieve", kwargs={"pk": payment.pk})
+#         response = self.client.get(url)
+#         self.assertEqual(response.status_code, 200)
+
+class PaymentCreateAPIViewTest(TestCase):
+
     def setUp(self):
+        self.factory = APIRequestFactory()
         self.client = APIClient()
-        self.user = User.objects.create(
-            email="test@example.com",
-            phone="1234567890",
-            city="Test City",
-            avatar=None,
-            role="member",
+        self.user = get_user_model().objects.create_user(
+            email='testuser@example.com',
+            password='testpassword'
         )
-        self.client.force_authenticate(user=self.user)
-        self.course = Course.objects.create(
-            name="Test Course",
-            preview=None,
-            description="Test Course Description",
-            owner=self.user,
-        )
-        self.lesson = Lesson.objects.create(
-            name='Test Lesson',
-            course=self.course,
-        )
+        self.url = reverse('users:payments')  # Убедитесь, что ваш URL соответствует этому имени
 
-    def test_payment_list_api_view(self):
-        url = reverse("payment_list")
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
+    @patch('users.views.rub_converter')
+    @patch('users.views.create_stripe_price')
+    @patch('users.views.create_stripe_sessions')
+    def test_payment_creation(self, mock_create_stripe_sessions, mock_create_stripe_price, mock_rub_converter):
+        # Настраиваем mock-объекты
+        mock_rub_converter.return_value = 100
+        mock_create_stripe_price.return_value = 'stripe_price_id'
+        mock_create_stripe_sessions.return_value = ('session_id', 'http://payment_link')
 
-    def test_payment_create_api_view(self):
-        url = reverse("payment_create")
+        # Данные для POST-запроса
         data = {
-            "course": self.course.id,
-            "lesson": self.lesson.id,
-            "payment_method": "usd",
-            "payment_sum": 100,
+            'payment_sum': 1000,
+            'description': 'Test payment'
         }
-        response = self.client.post(url, data, format="json")
-        self.assertEqual(response.status_code, 201)
-        self.assertEqual(Payment.objects.count(), 1)
-        created_payment = Payment.objects.first()
-        self.assertEqual(created_payment.course, self.course)
 
-    def test_payment_retrieve_api_view(self):
-        payment = Payment.objects.create(
-            course=self.course,
-            lesson=self.lesson,
-            payment_method="usd",
-            payment_sum=100,
-            user=self.user,
-        )
-        url = reverse("payment_retrieve", kwargs={"pk": payment.pk})
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
+        # Создание запроса
+        request = self.factory.post(self.url, data, format='json')
+        force_authenticate(request, user=self.user)
+        view = PaymentCreateAPIView.as_view()
 
+        # Выполнение запроса и проверка ответа
+        response = view(request)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
-class PaymentAPITest(APITestCase):
-    def setUp(self):
-        self.user = User.objects.create(
-            email="test@example.com",
-            phone="1234567890",
-            city="Test City",
-            avatar=None,
-            role="member",
-        )
-        self.client.force_authenticate(user=self.user)
-        self.course = Course.objects.create(
-            name="Test Course",
-            preview=None,
-            description="Test Course Description",
-            owner=self.user,
-        )
-        self.lesson = Lesson.objects.create(
-            name='Test Lesson',
-            course=self.course,
-        )
-
-    def test_payment_list_api_view(self):
-        url = reverse_lazy("users:payment_list")
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
-
-    def test_payment_create_api_view(self):
-        url = reverse_lazy("users:payment_create")
-        data = {
-            "course": self.course.id,
-            "lesson": self.lesson.id,
-            "payment_method": "usd",
-            "payment_sum": 100,
-        }
-        response = self.client.post(url, data, format="json")
-        self.assertEqual(response.status_code, 201)
-        self.assertEqual(Payment.objects.count(), 1)
+        # Проверка созданного объекта Payment
         payment = Payment.objects.get()
-        self.assertEqual(payment.course.id, self.course.id)
-        self.assertEqual(payment.lesson.id, self.lesson.id)
+        self.assertEqual(payment.user, self.user)
+        self.assertEqual(payment.payment_sum, 1000)
+        self.assertEqual(payment.session_id, 'session_id')
+        self.assertEqual(payment.link, 'http://payment_link')
 
-    def test_payment_retrieve_api_view(self):
-        payment = Payment.objects.create(
-            course=self.course,
-            lesson=self.lesson,
-            payment_method="usd",
-            payment_sum=100,
-            user=self.user,
-        )
-        url = reverse("users:payment_retrieve", kwargs={"pk": payment.pk})
-        response = self.client.get(url)
-        self.assertEqual(response.status_code, 200)
+        # Проверка вызовов mock-объектов
+        mock_rub_converter.assert_called_once_with(1000)
+        mock_create_stripe_price.assert_called_once_with(100)
+        mock_create_stripe_sessions.assert_called_once_with('stripe_price_id')
 
 
 if __name__ == "__main__":

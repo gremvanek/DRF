@@ -2,7 +2,7 @@ from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from django_filters import rest_framework as filters
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import viewsets, generics
+from rest_framework import viewsets, generics, status
 from rest_framework.permissions import IsAuthenticated, BasePermission
 from rest_framework.response import Response
 
@@ -114,3 +114,18 @@ class SubscriptionListAPIView(generics.ListAPIView):
     queryset = Subscription.objects.all()
     pagination_class = LearningPagination
     permission_classes = [IsAuthenticated & IsOwner]
+
+    @staticmethod
+    def delete(request, *args, **kwargs):
+        user = request.user
+        course_id = request.data.get("course")
+        course_item = get_object_or_404(Course, pk=course_id)
+        subscription_item = Subscription.objects.filter(user=user, course=course_item).first()
+
+        if subscription_item:
+            subscription_item.delete()
+            message = "подписка удалена"
+        else:
+            message = "подписка не найдена"
+
+        return Response({"message": message}, status=status.HTTP_200_OK)

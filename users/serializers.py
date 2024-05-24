@@ -1,3 +1,4 @@
+from django.contrib.auth import get_user_model
 from rest_framework.fields import SerializerMethodField, CharField
 from rest_framework.generics import get_object_or_404
 from rest_framework.serializers import ModelSerializer
@@ -6,9 +7,24 @@ from users.models import User, Payment
 
 
 class UserSerializer(ModelSerializer):
+    password = CharField(write_only=True)
+
     class Meta:
         model = User
-        fields = ["email"]
+        fields = ['id', 'email', 'password', 'phone', 'city', 'avatar', 'role']
+
+    def create(self, validated_data):
+        user = User.objects.create_user(**validated_data)
+        return user
+
+    def update(self, instance, validated_data):
+        password = validated_data.pop('password', None)
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        if password:
+            instance.set_password(password)
+        instance.save()
+        return instance
 
 
 class PaymentSerializer(ModelSerializer):

@@ -1,6 +1,5 @@
-# drf\urls.py
 from django.contrib import admin
-from django.urls import path, include, re_path
+from django.urls import path, include
 from drf_spectacular.views import (
     SpectacularAPIView,
     SpectacularSwaggerView,
@@ -23,24 +22,10 @@ schema_view = get_schema_view(
     permission_classes=(permissions.AllowAny,),
 )
 
-
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("", include("course.urls", namespace="lesson")),
-    path("users/", include("users.urls", namespace="users")),
-    re_path(
-        r"^swagger(?P<format>\.json|\.yaml)$",
-        schema_view.without_ui(cache_timeout=0),
-        name="schema-json",
-    ),
-    re_path(
-        r"^swagger/$",
-        schema_view.with_ui("swagger", cache_timeout=0),
-        name="schema-swagger-ui",
-    ),
-    re_path(
-        r"^redoc/$", schema_view.with_ui("redoc", cache_timeout=0), name="schema-redoc"
-    ),
+    path("lesson/", include("course.urls", namespace="lesson")),
+    path("", include("users.urls", namespace="users")),
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path(
         "api/schema/swagger-ui/",

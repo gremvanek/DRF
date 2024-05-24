@@ -1,16 +1,24 @@
 import os
 import stripe
-from django.conf import settings
-stripe.api_key = os.getenv(settings.STRIPE_SECRET_KEY)
-from forex_python.converter import CurrencyRates
+from forex_python.converter import CurrencyRates, RatesNotAvailableError
+
+from drf import settings
+
+stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 
 
 def rub_converter(amount):
     """Конвертация пендоской валюты в нормальную"""
-
-    c = CurrencyRates()
-    rate = c.get_rate('RUB', 'USD')
-    return int(rate * amount)
+    try:
+        c = CurrencyRates()
+        rate = c.get_rate('USD', 'RUB')  # Получаем курс доллара к рублю
+        return int(rate * amount)  # Умножаем сумму на курс и преобразуем в целое число
+    except RatesNotAvailableError as e:
+        # Обработка случая, когда сервис недоступен
+        return f"Currency rates are not available: {e}"
+    except Exception as e:
+        # Другие исключения, которые могут возникнуть при конвертации
+        return f"An error occurred: {e}"
 
 
 def create_stripe_price(amount):
@@ -32,6 +40,16 @@ def create_stripe_sessions(price):
         mode="payment",
     )
     return session.get("id"), session.get("url")
+
+
+def retrieve_session(session):
+    """Возвращаем obj сессии по АПИ, id передаем в аргумент функции"""
+    stripe.api_key = settings.STRIPE_SECRET_KEY
+
+    return stripe.checkout.Session.retrieve(
+        session,
+    )
+
 
 # def get_session(instance):
 #     """Возаращаем сессию для оплаты курса или урока по API"""
@@ -80,15 +98,6 @@ def create_stripe_sessions(price):
 #         currency=currency,
 #     )
 #
-#
-# def retrieve_session(session):
-#     """Возвращаем obj сессии по АПИ, id передаем в аргумент функц"""
-#     stripe.api_key = settings.STRIPE_SECRET_KEY
-#
-#     return stripe.checkout.Session.retrieve(
-#         session,
-#     )
-
 
 def create_checkout_session(price_id, success_url, cancel_url):
     return stripe.checkout.Session.create(

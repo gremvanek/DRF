@@ -32,7 +32,7 @@ class LessonTestCase(APITestCase):
             "video_url": "https://test.youtube.com/",
             "owner": self.user.id,
         }
-        response = self.client.post("/lesson/create/", data=data, format="json")
+        response = self.client.post(reverse("course:lesson_create"), data=data)
 
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertTrue(Lesson.objects.filter(name=data["name"]).exists())
@@ -73,7 +73,7 @@ class SubscriptionTestCase(APITestCase):
 
     def setUp(self) -> None:
         self.client = APIClient()
-        self.user = User.objects.create(
+        self.user = User.objects.create_user(
             email="test1@test.sky.pro",
             password="123test",
         )
@@ -91,9 +91,17 @@ class SubscriptionTestCase(APITestCase):
             "course": self.course.id,
         }
 
-        response = self.client.post("/subscription/create/", data=data)
-        print(response.json())
+        url = reverse('course:subscription_create')  # Обратите внимание на использование reverse
+        response = self.client.post(url, data=data, format="json")
+
+        # Проверка статуса ответа
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        # Проверка типа ответа
+        self.assertEqual(response.headers["Content-Type"], "application/json")
+
+        # Печать JSON-ответа для отладки
+        print(response.json())
         self.assertEqual(response.json(), {"message": "подписка добавлена"})
 
     def test_list_subscription(self):
@@ -111,11 +119,12 @@ class SubscriptionTestCase(APITestCase):
             "course": self.course.id,
         }
 
-        response = self.client.post("/subscription/create/", data=data)
-
+        # Создание подписки
+        response = self.client.post(reverse('course:subscription_create'), data=data)
         self.assertEqual(response.json(), {"message": "подписка добавлена"})
         print(response.json())
 
-        response = self.client.post("/subscription/create/", data=data)
+        # Удаление подписки
+        response = self.client.delete(reverse('course:subscription_delete'), data=data)
         self.assertEqual(response.json(), {"message": "подписка удалена"})
         print(response.json())
