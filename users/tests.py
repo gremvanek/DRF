@@ -21,10 +21,7 @@ def create_product_data():
         "description": "This is a test course.",
         "amount": 5000,
         "success_url": "https://example.com/success",
-        "cancel_url": "https://example.com/cancel",
-        "stripe_price_id": "123",
-        'stripe_checkout_session_id': "123",
-        "stripe_payment_url": "https://example.com/"
+        "cancel_url": "https://example.com/cancel"
     }
 
 
