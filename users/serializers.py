@@ -59,39 +59,27 @@ class PaymentSerializer(ModelSerializer):
 class PaymentRetrieveSerializer(ModelSerializer):
     """Serializer for retrieving a Payment"""
 
-    # /////////////////////////////////////////
-    # Добавим стерилизаторы для связанных моделей (если они есть)
     course = CourseSerializer(read_only=True)
     lesson = LessonSerializer(read_only=True)
     user = UserSerializer(read_only=True)
-    # /////////////////////////////////////////
-
     url_for_pay = SerializerMethodField(read_only=True)
 
     class Meta:
         model = Payment
-        # //////////////////////
         fields = (
             "is_paid",
-            "date_of_payment",
+            "payment_date",
             "payment_sum",
             "payment_method",
             "url_for_pay",
-            "session",
+            "session_id",
             "course",
             "lesson",
             "user",
         )
 
-    @staticmethod
-    def get_object(self):
-        obj = get_object_or_404(self.get_queryset(), pk=self.kwargs["pk"])
-        session = obj.retrieve_payment_session()
-        if session.payment_status == "paid" and session.status == "complete":
-            obj.is_paid = True
-            obj.save()
-        self.check_object_permissions(self.request, obj)
-        return obj
+    def get_url_for_pay(self, obj):
+        return obj.link if obj.link else ""
 
 
 class UserProfileSerializer(ModelSerializer):

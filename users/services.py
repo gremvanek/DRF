@@ -1,8 +1,7 @@
 import os
+
 import stripe
 from forex_python.converter import CurrencyRates, RatesNotAvailableError
-
-from drf import settings
 
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 
@@ -11,7 +10,7 @@ def rub_converter(amount):
     """Конвертация пендоской валюты в нормальную"""
     try:
         c = CurrencyRates()
-        rate = c.get_rate('USD', 'RUB')  # Получаем курс доллара к рублю
+        rate = c.get_rate('RUB', 'USD')  # Получаем курс доллара к рублю
         return int(rate * amount)  # Умножаем сумму на курс и преобразуем в целое число
     except RatesNotAvailableError as e:
         # Обработка случая, когда сервис недоступен
@@ -23,7 +22,6 @@ def rub_converter(amount):
 
 def create_stripe_price(amount):
     """Создание цены в стрипе"""
-
     return stripe.Price.create(
         currency="usd",
         unit_amount=amount * 100,
@@ -32,8 +30,7 @@ def create_stripe_price(amount):
 
 
 def create_stripe_sessions(price):
-    """Создание оплаты в stripes"""
-
+    """Создание оплаты в Stripe"""
     session = stripe.checkout.Session.create(
         success_url="https://127.0.0.1:8000/",
         line_items=[{"price": price.get("id"), "quantity": 1}],
@@ -43,13 +40,9 @@ def create_stripe_sessions(price):
 
 
 def retrieve_session(session):
-    """Возвращаем obj сессии по АПИ, id передаем в аргумент функции"""
-    stripe.api_key = settings.STRIPE_SECRET_KEY
-
-    return stripe.checkout.Session.retrieve(
-        session,
-    )
-
+    """Возвращаем obj сессии по API, id передаем в аргумент функции"""
+    stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
+    return stripe.checkout.Session.retrieve(session)
 
 # def get_session(instance):
 #     """Возаращаем сессию для оплаты курса или урока по API"""
@@ -98,21 +91,21 @@ def retrieve_session(session):
 #         currency=currency,
 #     )
 #
-
-def create_checkout_session(price_id, success_url, cancel_url):
-    return stripe.checkout.Session.create(
-        payment_method_types=["card"],
-        line_items=[
-            {
-                "price": price_id,
-                "quantity": 1,
-            }
-        ],
-        mode="payment",
-        success_url=success_url,
-        cancel_url=cancel_url,
-    )
-
-
-def retrieve_checkout_session(session_id):
-    return stripe.checkout.Session.retrieve(session_id)
+#
+# def create_checkout_session(price_id, success_url, cancel_url):
+#     return stripe.checkout.Session.create(
+#         payment_method_types=["card"],
+#         line_items=[
+#             {
+#                 "price": price_id,
+#                 "quantity": 1,
+#             }
+#         ],
+#         mode="payment",
+#         success_url=success_url,
+#         cancel_url=cancel_url,
+#     )
+#
+#
+# def retrieve_checkout_session(session_id):
+#     return stripe.checkout.Session.retrieve(session_id)

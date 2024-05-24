@@ -45,12 +45,12 @@ class PaymentListAPIView(generics.ListAPIView):
     filter_backends = [DjangoFilterBackend, OrderingFilter]
     # Фильтр по 'course', 'lesson', 'payment_method'
     filterset_fields = ("course", "lesson", "payment_method")
-    # сортировка по дате оплаты
+    # Сортировка по дате оплаты
     ordering_fields = ["payment_date"]
 
 
 class PaymentRetrieveAPIView(generics.RetrieveAPIView):
-    """Получаем список Payment"""
+    """Получаем детали Payment"""
 
     serializer_class = PaymentRetrieveSerializer
     permission_classes = [IsAuthenticated]
