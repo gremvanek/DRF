@@ -1,10 +1,11 @@
 import unittest
 from unittest.mock import patch
-
 from django.test import TestCase
+from rest_framework.reverse import reverse
 
-from course.models import Lesson, Course
-from .models import Payment, User
+from .models import User, Payment
+from rest_framework.test import APITestCase, APIClient
+from .models import Course, Lesson
 
 
 class TestPaymentMethods(TestCase):
@@ -80,6 +81,103 @@ class TestPaymentMethods(TestCase):
             success_url=success_url,
             cancel_url=cancel_url,
         )
+
+
+class PaymentListCreateRetrieveAPITest(TestCase):
+    def setUp(self):
+        # Инициализация клиента API и создание пользователя для аутентификации
+        self.client = APIClient()
+        self.user = User.objects.create(
+            email="test@example.com",
+            phone="1234567890",
+            city="Test City",
+            avatar=None,
+            role="member",
+        )
+        self.client.force_authenticate(user=self.user)
+        # Создание объекта Курса для тестирования
+        self.course = Course.objects.create(
+            name="Test Course",
+            preview=None,
+            description="Test Course Description",
+            owner=self.user,
+        )
+
+    def test_payment_list_api_view(self):
+        # Тестирование получения списка платежей через API
+        url = reverse("payment-list")
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+    def test_payment_create_api_view(self):
+        url = reverse("payment-create")
+        data = {
+            "course": self.course.id,  # Передача ID объекта Курса
+            "lesson": "Test Lesson",
+            "payment_type": "Test Payment Type",
+            "amount": 100,
+        }
+        response = self.client.post(url, data, format="json")
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(Payment.objects.count(), 1)
+        # Получение созданного объекта Платежа и проверка привязки к Курсу
+        created_payment = Payment.objects.first()
+        self.assertEqual(created_payment.course, self.course)
+
+    def test_payment_retrieve_api_view(self):
+        # Тестирование получения информации о платеже через API
+        payment = Payment.objects.create(
+            course=self.course,
+            lesson="Test Lesson",
+            payment_type="Test Payment Type",
+            amount=100,
+            user=self.user,
+        )
+        url = reverse("payment-retrieve", kwargs={"pk": payment.pk})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+
+class PaymentAPITest(APITestCase):
+    def setUp(self):
+        self.user = User.objects.create(
+            email="test@example.com",
+            phone="1234567890",
+            city="Test City",
+            avatar=None,
+            role="member",
+        )
+        self.client.force_authenticate(user=self.user)
+
+    def test_payment_list_api_view(self):
+        url = "/payment/list/"
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
+
+    def test_payment_create_api_view(self):
+        url = "/payment/create/"
+        data = {
+            "course": "Test Course",
+            "lesson": "Test Lesson",
+            "payment_type": "Test Payment Type",
+            "amount": 100,
+        }
+        response = self.client.post(url, data, format="json")
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(Payment.objects.count(), 1)
+        self.assertEqual(Payment.objects.get().course, "Test Course")
+
+    def test_payment_retrieve_api_view(self):
+        payment = Payment.objects.create(
+            course="Test Course",
+            lesson="Test Lesson",
+            payment_type="Test Payment Type",
+            amount=100,
+            user=self.user,
+        )
+        url = f"/payment/{payment.pk}/retrieve/"
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, 200)
 
 
 if __name__ == "__main__":

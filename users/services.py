@@ -19,6 +19,15 @@ def create_price(product_id, unit_amount, currency="usd"):
     )
 
 
+def retrieve_session(session):
+    """Возвращаем obj сессии по АПИ, id передаем в аргумент функц"""
+    stripe.api_key = settings.STRIPE_SECRET_KEY
+
+    return stripe.checkout.Session.retrieve(
+        session,
+    )
+
+
 def create_checkout_session(price_id, success_url, cancel_url):
     return stripe.checkout.Session.create(
         payment_method_types=["card"],

@@ -1,12 +1,13 @@
-from django_filters import OrderingFilter
+from django.urls import reverse
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import viewsets, generics, status
+from rest_framework import generics, status
+from rest_framework import viewsets
 from rest_framework.exceptions import ValidationError
+from rest_framework.filters import OrderingFilter
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
-from course.validators import LinkValidator
 from users.models import User, Payment
 from users.serializers import (
     UserSerializer,
@@ -15,6 +16,7 @@ from users.serializers import (
     PaymentRetrieveSerializer,
     PaymentCreateSerializer,
 )
+from users.services import retrieve_session
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -33,10 +35,8 @@ class UserViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         if self.action in ["create"]:
             permission_classes = [AllowAny()]
-
         else:
             permission_classes = super().get_permissions()
-
         return permission_classes
 
 
@@ -46,25 +46,31 @@ class UserProfileAPIView(generics.RetrieveAPIView):
 
     def get_object(self):
         user = super().get_object()
-        user.payments = user.payment_set.all()
+        user.payments = (
+            user.payment_set.all()
+        )  # Добавляем связанные платежи к объекту пользователя
         return user
 
 
 class PaymentListAPIView(generics.ListAPIView):
-    """Получаем список платежей"""
+    """Получаем список Payment"""
 
     serializer_class = PaymentSerializer
     queryset = Payment.objects.all()
 
     filter_backends = [DjangoFilterBackend, OrderingFilter]
-    # Фильтр по 'course', 'lesson', 'payment_method'
-    filterset_fields = ("course", "lesson", "payment_method")
+    # Фильтр по 'course', 'lesson', 'payment_type'
+    filterset_fields = ("course", "lesson", "payment_type")
     # сортировка по дате оплаты
-    ordering_fields = ("payment_date",)
+    ordering_fields = ("date_of_payment",)
+
+    @staticmethod
+    def get_success_url():
+        return reverse("payment-list")
 
 
 class PaymentCreateAPIView(generics.CreateAPIView):
-    """Создаем платеж"""
+    """Создаем платеж - Payment"""
 
     serializer_class = PaymentCreateSerializer
     queryset = Payment.objects.all()
@@ -77,29 +83,15 @@ class PaymentCreateAPIView(generics.CreateAPIView):
             raise ValidationError(
                 {"non_empty_fields": "Заполните поле: lesson или course"}
             )
+        serializer.save(user=self.request.user)
 
-        # Используем LinkValidator для валидации
-        link_validator = LinkValidator(field="your_field_name")
-        links_to_validate = [
-            serializer.validated_data.get("your_field_name")
-        ]  # Замените 'your_field_name' на реальное имя поля
-
-        # Проходимся по ссылкам для валидации
-        for link in links_to_validate:
-            link_validator(link)
-
-        new_payment = serializer.save(user=self.request.user)
-        new_payment.session = new_payment.create_checkout_session(
-            product_name="Test Product",  # Название продукта
-            price=new_payment.payment_sum,  # Сумма оплаты
-            success_url="http://example.com/success",  # URL успешной оплаты
-            cancel_url="http://example.com/cancel",  # URL отмены оплаты
-        )
-        new_payment.save()
+    @staticmethod
+    def get_success_url():
+        return reverse("payment-create")
 
 
 class PaymentRetrieveAPIView(generics.RetrieveAPIView):
-    """Получаем платеж"""
+    """Получаем список Payment"""
 
     serializer_class = PaymentRetrieveSerializer
     permission_classes = [IsAuthenticated]
@@ -107,9 +99,12 @@ class PaymentRetrieveAPIView(generics.RetrieveAPIView):
 
     def get_object(self):
         obj = get_object_or_404(self.get_queryset(), pk=self.kwargs["pk"])
-        session = obj.retrieve_payment_session()
+        session = retrieve_session(obj.session)
         if session.payment_status == "paid" and session.status == "complete":
             obj.is_paid = True
             obj.save()
         self.check_object_permissions(self.request, obj)
         return obj
+
+    def get_success_url(self):
+        return reverse("payment-retrieve", kwargs={"pk": self.kwargs["pk"]})

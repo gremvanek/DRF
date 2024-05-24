@@ -35,6 +35,10 @@ class LinkValidator:
         )
         return re.match(youtube_regex, link)
 
+    @staticmethod
+    def validation_error(param):
+        raise ValidationError(f"Validation error for {param}")
+
 
 class SubscriptionValidator:
     def __call__(self, attrs):

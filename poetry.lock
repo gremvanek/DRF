@@ -498,6 +498,16 @@ test = ["pickleshare", "pytest", "pytest-asyncio (<0.22)", "testpath"]
 test-extra = ["curio", "ipython[test]", "matplotlib (!=3.2.0)", "nbformat", "numpy (>=1.23)", "pandas", "trio"]
 
 [[package]]
+name = "isorted"
+version = "0.2"
+description = "Sorts objects/dictionaries by keys/attributes"
+optional = false
+python-versions = "*"
+files = [
+    {file = "isorted-0.2.tar.gz", hash = "sha256:d1f84c7f0e13e230fd636d9c5a3cc156245a05dcb64791924348a21f3ee374f6"},
+]
+
+[[package]]
 name = "jedi"
 version = "0.19.1"
 description = "An autocompletion tool for Python that can be used for text editors."
@@ -1397,4 +1407,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "67980a34c431591761c129708029cdaf3dc306abbc89bd17f92bef220cbc1476"
+content-hash = "21e0ac98eb3548617cbfdb0702fee219aa1cb5f7e148926a3e26f2a360c4d2ae"
