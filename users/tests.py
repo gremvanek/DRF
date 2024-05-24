@@ -1,78 +1,82 @@
-import pytest
-import requests_mock
-from django.urls import reverse
-from rest_framework import status
-from rest_framework.test import APIClient
+import unittest
+from unittest.mock import patch
 
-from course.models import Product
-from users.models import Payment
-from django.contrib.auth.models import User  # Добавлен импорт модели User
+from django.test import TestCase
+
+from course.models import Lesson, Course
+from .models import Payment, User
 
 
-@pytest.fixture
-def api_client():
-    return APIClient()
+class TestPaymentMethods(TestCase):
+    def setUp(self):
+        self.user = User.objects.create(
+            email='test@example.com',
+            phone='1234567890',
+            city='Test City',
+            avatar=None,
+            role='member'
+        )
+
+        # Создаем курс
+        self.course = Course.objects.create(
+            name='Test Course',
+            preview=None,
+            description='Test Course Description',
+            owner=self.user,  # Предполагается, что self.user уже создан
+        )
+
+        # Создаем урок
+        self.lesson = Lesson.objects.create(
+            name='Test Lesson',
+            description='Test Lesson Description',
+            preview=None,  #
+            video_url='http://example.com/video',
+            link='http://example.com/link',
+            course=self.course,
+            owner=self.user,
+        )
+
+        # Создаем платеж
+        self.payment = Payment.objects.create(
+            user=self.user,
+            course=self.course,  # Используем ранее созданный курс
+            lesson=self.lesson,  # Используем ранее созданный урок
+            payment_sum=100,
+            payment_method='1',
+        )
+
+    @patch('stripe.Product.create')
+    @patch('stripe.Price.create')
+    @patch('stripe.checkout.Session.create')
+    def test_create_checkout_session(self, mock_session_create, mock_price_create, mock_product_create):
+        mock_product_create.return_value.id = 'prod_test'
+        mock_price_create.return_value.id = 'price_test'
+        mock_session_create.return_value.id = 'session_test'
+
+        success_url = 'http://example.com/success'
+        cancel_url = 'http://example.com/cancel'
+
+        session_id = self.payment.create_checkout_session(
+            product_name='Test Product',
+            price=100,
+            success_url=success_url,
+            cancel_url=cancel_url
+        )
+
+        self.assertEqual(session_id, 'session_test')
+        self.assertEqual(self.payment.session, 'session_test')
+        self.payment.refresh_from_db()
+        self.assertEqual(self.payment.session, 'session_test')
+        mock_product_create.assert_called_once_with(name='Test Product', type='service')
+        mock_price_create.assert_called_once_with(product='prod_test', unit_amount=100, currency='usd')
+        mock_session_create.assert_called_once_with(
+            payment_method_types=['card'],
+            line_items=[{'price': 'price_test', 'quantity': 1}],
+            mode='payment',
+            success_url=success_url,
+            cancel_url=cancel_url
+        )
 
 
-@pytest.fixture
-def create_product_data():
-    return {
-        "name": "Test Course",
-        "description": "This is a test course.",
-        "amount": 5000,
-        "success_url": "https://example.com/success",
-        "cancel_url": "https://example.com/cancel"
-    }
-
-
-@pytest.fixture
-def mocker_fixture():
-    with requests_mock.Mocker() as mocker:
-        yield mocker
-
-
-@pytest.mark.django_db
-def test_create_payment(mocker_fixture, api_client, create_product_data):
-    mocker_fixture.post("https://api.stripe.com/v1/products", json={"id": "prod_test"})
-    mocker_fixture.post("https://api.stripe.com/v1/prices", json={"id": "price_test"})
-    mocker_fixture.post("https://api.stripe.com/v1/checkout/sessions", json={"id": "cs_test",
-                                                                             "url": "https://stripe.com/test_checkout"})
-
-    response = api_client.post(reverse('users:payment-create-payment'), data=create_product_data, format='json')
-
-    assert response.status_code == status.HTTP_201_CREATED
-    response_data = response.json()
-    assert 'payment_url' in response_data
-    assert response_data['payment_url'] == "https://stripe.com/test_checkout"
-
-    product = Product.objects.get(name=create_product_data['name'])
-    assert product.description == create_product_data['description']
-    assert product.stripe_product_id == "prod_test"
-
-    # Here, we create a payment related to the user
-    user = User.objects.first()  # Assuming there's at least one user in the database
-    payment = Payment.objects.get(user=user)
-    assert payment.payment_sum == create_product_data['amount']
-    assert payment.payment_method == "1"  # Checking payment method
-
-
-@pytest.mark.django_db
-def test_check_payment_status(mocker):  # Add mocker as an argument
-    # Create a product
-    product = Product.objects.create(name="Test Course", description="This is a test course.",
-                                     stripe_product_id="prod_test")
-    # Create a payment
-    payment = Payment.objects.create(product=product, payment_sum=5000, payment_method='1',
-                                     stripe_price_id="price_test",
-                                     stripe_checkout_session_id="cs_test",
-                                     stripe_payment_url="https://stripe.com/test_checkout")
-
-    mocker.get(f"https://api.stripe.com/v1/checkout/sessions/{payment.stripe_checkout_session_id}",
-               json={"id": "cs_test", "payment_status": "paid"})
-
-    response = mocker.get(reverse('payment-check-payment-status', kwargs={'pk': payment.pk}))
-
-    assert response.status_code == status.HTTP_200_OK
-    response_data = response.json()
-    assert response_data['id'] == "cs_test"
-    assert response_data['payment_status'] == "paid"
+if __name__ == '__main__':
+    unittest.main()

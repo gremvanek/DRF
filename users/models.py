@@ -1,3 +1,6 @@
+import os
+
+import stripe
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils.translation import gettext_lazy as _
@@ -55,3 +58,37 @@ class Payment(models.Model):
         verbose_name = 'платеж'
         verbose_name_plural = 'платежи'
         ordering = ('-payment_date',)
+
+    def create_checkout_session(self, product_name, price, success_url, cancel_url):
+        stripe.api_key = os.getenv('STRIPE_SECRET_KEY')
+
+        # Создание продукта
+        product = stripe.Product.create(
+            name=product_name,
+            type='service',
+        )
+
+        # Создание цены
+        price = stripe.Price.create(
+            product=product.id,
+            unit_amount=price,
+            currency='usd',  # Или другая валюта
+        )
+
+        # Создание сессии для оплаты
+        session = stripe.checkout.Session.create(
+            payment_method_types=['card'],
+            line_items=[{
+                'price': price.id,
+                'quantity': 1,
+            }],
+            mode='payment',
+            success_url=success_url,
+            cancel_url=cancel_url,
+        )
+
+        # Сохранение id сессии в поле модели
+        self.session = session.id
+        self.save()
+
+        return session.id
