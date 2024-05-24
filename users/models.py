@@ -88,8 +88,14 @@ class Payment(models.Model):
     )
 
     is_paid = models.BooleanField(default=False, verbose_name="статус оплаты")
-    session = models.CharField(
-        max_length=180, verbose_name="сессия для оплаты", **NULLABLE
+    session_id = models.CharField(
+        max_length=180, verbose_name="сессия для оплаты", **NULLABLE, help_text='Укажите id сессии'
+    )
+    link = models.URLField(
+        max_length=400,
+        **NULLABLE,
+        verbose_name='Сслыка для оплаты',
+        help_text='Укажите ссылку для оплаты'
     )
 
     def __str__(self):

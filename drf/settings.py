@@ -168,7 +168,7 @@ SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=55),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
 }
-# Настройки для strip
+# Настройки для stripe
 STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
 STRIPE_PUBLISHABLE_KEY = os.getenv("STRIPE_PUBLISHABLE_KEY")
 # Настройки для Users

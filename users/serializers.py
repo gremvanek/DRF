@@ -1,57 +1,56 @@
-from rest_framework import serializers
+from rest_framework.fields import SerializerMethodField, CharField
 from rest_framework.generics import get_object_or_404
-
-from course.models import Lesson
+from rest_framework.serializers import ModelSerializer
 from course.serializers import CourseSerializer, LessonSerializer
 from users.models import User, Payment
 
 
-class UserSerializer(serializers.ModelSerializer):
+class UserSerializer(ModelSerializer):
     class Meta:
         model = User
         fields = ["email"]
 
 
-class PaymentSerializer(serializers.ModelSerializer):
+class PaymentSerializer(ModelSerializer):
     class Meta:
         model = Payment
         fields = "__all__"
 
 
-class PaymentCreateSerializer(serializers.ModelSerializer):
-    lesson = serializers.SlugRelatedField(
-        slug_field="name",
-        queryset=Lesson.objects.all(),
-        allow_null=True,
-        required=False,
-    )
-    user = serializers.SlugRelatedField(slug_field="email", queryset=User.objects.all())
+# class PaymentCreateSerializer(ModelSerializer):
+#     lesson = serializers.SlugRelatedField(
+#         slug_field="name",
+#         queryset=Lesson.objects.all(),
+#         allow_null=True,
+#         required=False,
+#     )
+#     user = serializers.SlugRelatedField(slug_field="email", queryset=User.objects.all())
+#
+#     date_of_payment
+#
+#     class Meta:
+#         model = Payment
+#         fields = (
+#             "session",
+#             "course",
+#             "lesson",
+#             "user",
+#             "payment_sum",
+#             "payment_method"
+#
 
-    # date_of_payment
 
-    class Meta:
-        model = Payment
-        fields = (
-            "session",
-            "course",
-            "lesson",
-            "user",
-            "payment_sum",
-            "payment_method",
-        )
-
-
-class PaymentRetrieveSerializer(serializers.ModelSerializer):
+class PaymentRetrieveSerializer(ModelSerializer):
     """Serializer for retrieving a Payment"""
 
     # /////////////////////////////////////////
-    # Добавим сериализаторы для связанных моделей (если они есть)
+    # Добавим стерилизаторы для связанных моделей (если они есть)
     course = CourseSerializer(read_only=True)
     lesson = LessonSerializer(read_only=True)
     user = UserSerializer(read_only=True)
     # /////////////////////////////////////////
 
-    url_for_pay = serializers.SerializerMethodField(read_only=True)
+    url_for_pay = SerializerMethodField(read_only=True)
 
     class Meta:
         model = Payment
@@ -79,7 +78,7 @@ class PaymentRetrieveSerializer(serializers.ModelSerializer):
         return obj
 
 
-class UserProfileSerializer(serializers.ModelSerializer):
+class UserProfileSerializer(ModelSerializer):
     payments = PaymentSerializer(many=True, read_only=True)
 
     class Meta:
@@ -87,8 +86,8 @@ class UserProfileSerializer(serializers.ModelSerializer):
         fields = ["id", "email", "phone", "city", "avatar", "payments"]
 
 
-class UserPasswordSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True)
+class UserPasswordSerializer(ModelSerializer):
+    password = CharField(write_only=True)
 
     class Meta:
         model = User
