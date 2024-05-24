@@ -41,42 +41,4 @@ class UserProfileAPIView(generics.RetrieveAPIView):
         return user
 
 
-class PaymentViewSet(viewsets.ViewSet):
-    # Указываем URL-адрес для create_payment
-    @action(detail=False, methods=['post'])
-    def create_payment(self, request):
-        product_name = request.data.get("name")
-        product_description = request.data.get("description")
-        amount = request.data.get("amount")
-        success_url = request.data.get("success_url")
-        cancel_url = request.data.get("cancel_url")
 
-        product = create_product(product_name, product_description)
-        price = create_price(product['id'], amount)
-
-        checkout_session = create_checkout_session(price['id'], success_url, cancel_url)
-
-        new_product = Product.objects.create(
-            name=product_name,
-            description=product_description,
-            stripe_product_id=product['id']
-        )
-
-        new_payment = Payment.objects.create(
-            product=new_product,
-            amount=amount // 100,
-            stripe_price_id=price['id'],
-            stripe_checkout_session_id=checkout_session['id'],
-            stripe_payment_url=checkout_session['url']
-        )
-
-        return Response({
-            "payment_url": new_payment.stripe_payment_url
-        }, status=status.HTTP_201_CREATED)
-
-    # Указываем URL-адрес для check_payment_status
-    @action(detail=True, methods=['get'])
-    def check_payment_status(self, pk=None):
-        payment = Payment.objects.get(pk=pk)
-        session = retrieve_checkout_session(payment.stripe_checkout_session_id)
-        return Response(session)
