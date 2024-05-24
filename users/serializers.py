@@ -36,8 +36,8 @@ class PaymentCreateSerializer(serializers.ModelSerializer):
             "course",
             "lesson",
             "user",
-            "payment_amount",
-            "payment_type",
+            "payment_sum",
+            "payment_method",
         )
 
 
@@ -59,8 +59,8 @@ class PaymentRetrieveSerializer(serializers.ModelSerializer):
         fields = (
             "is_paid",
             "date_of_payment",
-            "payment_amount",
-            "payment_type",
+            "payment_sum",
+            "payment_method",
             "url_for_pay",
             "session",
             "course",

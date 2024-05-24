@@ -1,4 +1,4 @@
-from django.urls import reverse
+from django.urls import reverse_lazy
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, status
 from rest_framework import viewsets
@@ -8,6 +8,7 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
+
 from users.models import User, Payment
 from users.serializers import (
     UserSerializer,
@@ -16,7 +17,7 @@ from users.serializers import (
     PaymentRetrieveSerializer,
     PaymentCreateSerializer,
 )
-from users.services import retrieve_session
+from users.services import retrieve_session, get_session
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -60,34 +61,36 @@ class PaymentListAPIView(generics.ListAPIView):
 
     filter_backends = [DjangoFilterBackend, OrderingFilter]
     # Фильтр по 'course', 'lesson', 'payment_type'
-    filterset_fields = ("course", "lesson", "payment_type")
+    filterset_fields = ("course", "lesson", "payment_method")
     # сортировка по дате оплаты
     ordering_fields = ("date_of_payment",)
 
     @staticmethod
     def get_success_url():
-        return reverse("payment-list")
+        return reverse_lazy("payment_list")
 
 
 class PaymentCreateAPIView(generics.CreateAPIView):
-    """Создаем платеж - Payment"""
-
+    """ Создаем платеж - Payment"""
     serializer_class = PaymentCreateSerializer
     queryset = Payment.objects.all()
     permission_classes = [IsAuthenticated]
 
     def perform_create(self, serializer):
-        lesson = serializer.validated_data.get("lesson")
-        course = serializer.validated_data.get("course")
+        lesson = serializer.validated_data.get('lesson')
+        course = serializer.validated_data.get('course')
         if not lesson and not course:
-            raise ValidationError(
-                {"non_empty_fields": "Заполните поле: lesson или course"}
-            )
-        serializer.save(user=self.request.user)
+            raise ValidationError({
+                'non_empty_fields': 'Заполните поле: lesson или course'
+            })
+        new_pay = serializer.save()
+        new_pay.user = self.request.user
+        new_pay.session = get_session(new_pay).id
+        new_pay.save()
 
     @staticmethod
     def get_success_url():
-        return reverse("payment-create")
+        return reverse_lazy("payment_create")
 
 
 class PaymentRetrieveAPIView(generics.RetrieveAPIView):
@@ -107,4 +110,4 @@ class PaymentRetrieveAPIView(generics.RetrieveAPIView):
         return obj
 
     def get_success_url(self):
-        return reverse("payment-retrieve", kwargs={"pk": self.kwargs["pk"]})
+        return reverse_lazy("payment_retrieve", kwargs={"pk": self.kwargs["pk"]})

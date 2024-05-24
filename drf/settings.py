@@ -44,6 +44,11 @@ INSTALLED_APPS = [
     "drf_spectacular_sidecar",
     "course",
     "users",
+
+    'corsheaders',
+
+    'stripe',
+    'django_celery_beat',
 ]
 
 MIDDLEWARE = [
@@ -54,6 +59,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = "drf.urls"
@@ -170,6 +176,14 @@ AUTH_USER_MODEL = "users.User"
 AUTH_USER_NAME = "email"
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/"
+# Настройки для Cors
+CORS_ALLOWED_ORIGINS = [
+    'https://127.0.0.1:8000',
+]
+CSRF_TRUSTED_ORIGINS = [
+    "https://read-and-write.example.com",
+]
+CORS_ALLOW_ALL_ORIGINS = False
 # Создание SU
 ROOT_EMAIL = os.getenv("ROOT_EMAIL")
 ROOT_PASSWORD = os.getenv("ROOT_PASSWORD")

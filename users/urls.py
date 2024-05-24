@@ -23,13 +23,8 @@ urlpatterns = [
     path("user_detail/<int:pk>/", UserProfileAPIView.as_view(), name="user_detail"),
     path("token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
-    path("payment/list/", PaymentListAPIView.as_view(), name="payment_list"),
-    # Исправлено на "payment_list"
-    path("payment/create/", PaymentCreateAPIView.as_view(), name="payment_create"),
-    # Исправлено на "payment_create"
-    path(
-        "payment/<int:pk>/retrieve/",
-        PaymentRetrieveAPIView.as_view(),
-        name="payment_retrieve",  # Исправлено на "payment_retrieve"
-    ),
+
+    path('payment/list/', PaymentListAPIView.as_view(), name='payment_list'),
+    path('payment/create/', PaymentCreateAPIView.as_view(), name='payment_create'),
+    path('payment/<int:pk>/', PaymentRetrieveAPIView.as_view(), name='payment_retrieve'),
 ] + router.urls

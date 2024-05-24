@@ -22,7 +22,8 @@ class Course(models.Model):
         verbose_name = "Курс"
         verbose_name_plural = "Курсы"
 
-    def filter_by_lesson(self, queryset, name, value):
+    @staticmethod
+    def filter_by_lesson(queryset, name, value):
         return queryset.filter(lessons__name=value)
 
 
