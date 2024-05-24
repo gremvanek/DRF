@@ -52,23 +52,25 @@ class TestPaymentMethods(TestCase):
         mock_product_create.return_value.id = "prod_test"
         mock_price_create.return_value.id = "price_test"
         mock_session_create.return_value.id = "session_test"
+        mock_session_create.return_value.url = "http://example.com/session"
 
         success_url = "http://example.com/success"
         cancel_url = "http://example.com/cancel"
 
-        session_id = self.payment.create_checkout_session(
+        # Метод create_checkout_session должен быть частью модели Payment
+        session_id, session_url = self.payment.create_checkout_session(
             product_name="Test Product",
-            price=100,
+            price=10000,
             success_url=success_url,
             cancel_url=cancel_url,
         )
 
         self.assertEqual(session_id, "session_test")
-        self.assertEqual(self.payment.session, "session_test")
+        self.assertEqual(session_url, "http://example.com/session")
         self.payment.refresh_from_db()
-        self.assertEqual(self.payment.session, "session_test")
+        self.assertEqual(self.payment.session_id, "session_test")
         mock_product_create.assert_called_once_with(name="Test Product", type="service")
-        mock_price_create.assert_called_once_with(product="prod_test", unit_amount=100, currency="usd")
+        mock_price_create.assert_called_once_with(product="prod_test", unit_amount=100 * 100, currency="usd")
         mock_session_create.assert_called_once_with(
             payment_method_types=["card"],
             line_items=[{"price": "price_test", "quantity": 1}],
@@ -194,12 +196,12 @@ class PaymentCreateAPIViewTest(TestCase):
             email='testuser@example.com',
             password='testpassword'
         )
-        self.url = reverse('users:payments')  # Убедитесь, что ваш URL соответствует этому имени
+        self.url = reverse('users:payments')
 
     @patch('users.views.rub_converter')
     @patch('users.views.create_stripe_price')
     @patch('users.views.create_stripe_sessions')
-    def test_payment_creation(self, mock_create_stripe_sessions, mock_create_stripe_price, mock_rub_converter):
+    def test_perform_create(self, mock_create_stripe_sessions, mock_create_stripe_price, mock_rub_converter):
         # Настраиваем mock-объекты
         mock_rub_converter.return_value = 100
         mock_create_stripe_price.return_value = 'stripe_price_id'

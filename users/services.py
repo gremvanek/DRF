@@ -10,14 +10,14 @@ def rub_converter(amount):
     """Конвертация пендоской валюты в нормальную"""
     try:
         c = CurrencyRates()
-        rate = c.get_rate('RUB', 'USD')  # Получаем курс доллара к рублю
-        return int(rate * amount)  # Умножаем сумму на курс и преобразуем в целое число
+        rate = c.get_rate('USD', 'RUB')  # Получаем курс доллара к рублю
+        return int(rate * amount), None  # Умножаем сумму на курс и преобразуем в целое число
     except RatesNotAvailableError as e:
         # Обработка случая, когда сервис недоступен
-        return f"Currency rates are not available: {e}"
+        return None, f"Currency rates are not available: {e}"
     except Exception as e:
         # Другие исключения, которые могут возникнуть при конвертации
-        return f"An error occurred: {e}"
+        return None, f"An error occurred: {e}"
 
 
 def create_stripe_price(amount):
