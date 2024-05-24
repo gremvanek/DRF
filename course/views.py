@@ -2,32 +2,30 @@ from django.shortcuts import get_object_or_404
 from django.utils.decorators import method_decorator
 from django_filters import rest_framework as filters
 from drf_yasg.utils import swagger_auto_schema
-from rest_framework import viewsets, generics, status
-from rest_framework.decorators import action
+from rest_framework import viewsets, generics
 from rest_framework.permissions import IsAuthenticated, BasePermission
 from rest_framework.response import Response
 
-from course.models import Course, Lesson, Product
+from course.models import Course, Lesson
 from course.paginators import LessonPagination, LearningPagination
 from course.permissions import IsModerator, IsOwner
-from users.models import Payment
+
 from .models import Subscription
 from .serializers import CourseSerializer, LessonSerializer, SubscriptionSerializer
-from .services import create_product, create_price, create_checkout_session, retrieve_checkout_session
 
 
 class CourseFilter(filters.FilterSet):
-    lesson = filters.CharFilter(field_name="lesson__name", lookup_expr='icontains')
+    lesson = filters.CharFilter(field_name="lesson__name", lookup_expr="icontains")
 
     class Meta:
         model = Course
-        fields = ['name', 'lesson']
+        fields = ["name", "lesson"]
 
 
 class LessonFilter(filters.FilterSet):
     class Meta:
         model = Lesson
-        fields = ['name']
+        fields = ["name"]
 
 
 class IsNotModerator(BasePermission):
@@ -35,7 +33,10 @@ class IsNotModerator(BasePermission):
         return not request.user.is_moderator
 
 
-@method_decorator(name='list', decorator=swagger_auto_schema(operation_description='Показ списка курсов'))
+@method_decorator(
+    name="list",
+    decorator=swagger_auto_schema(operation_description="Показ списка курсов"),
+)
 class CourseViewSet(viewsets.ModelViewSet):
     serializer_class = CourseSerializer
     queryset = Course.objects.all()
@@ -44,7 +45,7 @@ class CourseViewSet(viewsets.ModelViewSet):
         serializer.save(owner=self.request.user)
 
     def get_permissions(self):
-        if self.action == 'create':
+        if self.action == "create":
             permission_classes = [IsAuthenticated, IsNotModerator]
         else:
             permission_classes = [IsAuthenticated & (IsModerator | IsOwner)]
@@ -92,18 +93,20 @@ class SubscriptionCreateAPIView(generics.CreateAPIView):
 
     def create(self, request, *args, **kwargs):
         user = request.user
-        course_id = request.data.get('course')
+        course_id = request.data.get("course")
         course_item = get_object_or_404(Course, pk=course_id)
-        subscription_item = Subscription.objects.filter(user=user, course=course_item).first()
+        subscription_item = Subscription.objects.filter(
+            user=user, course=course_item
+        ).first()
 
         if subscription_item:
             subscription_item.delete()
-            message = 'подписка удалена'
+            message = "подписка удалена"
         else:
             Subscription.objects.create(user=user, course=course_item)
-            message = 'подписка добавлена'
+            message = "подписка добавлена"
 
-        return Response({'message': message})
+        return Response({"message": message})
 
 
 class SubscriptionListAPIView(generics.ListAPIView):

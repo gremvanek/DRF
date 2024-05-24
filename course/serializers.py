@@ -7,10 +7,12 @@ from course.validators import TitleValidator, LinkValidator, SubscriptionValidat
 class LessonSerializer(serializers.ModelSerializer):
     class Meta:
         model = Lesson
-        fields = '__all__'
+        fields = "__all__"
         validators = [
-            TitleValidator(field='name'),
-            serializers.UniqueTogetherValidator(fields=['name'], queryset=Lesson.objects.all()),
+            TitleValidator(field="name"),
+            serializers.UniqueTogetherValidator(
+                fields=["name"], queryset=Lesson.objects.all()
+            ),
         ]
 
 
@@ -24,21 +26,21 @@ class CourseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Course
-        fields = ['name', 'description', 'lessons', 'count_lessons']
+        fields = ["name", "description", "lessons", "count_lessons"]
 
     def validate(self, data):
         # Применение TitleValidator
-        TitleValidator(field='name')(data)
+        TitleValidator(field="name")(data)
         # Применение LinkValidator
-        LinkValidator('video_url')(data)
-        LinkValidator('link')(data)
+        LinkValidator("video_url")(data)
+        LinkValidator("link")(data)
         return data
 
 
 class SubscriptionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Subscription
-        fields = '__all__'
+        fields = "__all__"
         validators = [
             SubscriptionValidator(),
         ]
