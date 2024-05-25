@@ -205,7 +205,7 @@ class PaymentCreateAPIViewTest(TestCase):
     @patch('users.views.create_stripe_sessions')
     def test_perform_create(self, mock_create_stripe_sessions, mock_create_stripe_price, mock_rub_converter):
         # Настраиваем mock-объекты
-        mock_rub_converter.return_value = 100, None
+        mock_rub_converter.return_value = (100, None)
         mock_create_stripe_price.return_value = 'stripe_price_id'
         mock_create_stripe_sessions.return_value = ('session_id', 'http://payment_link')
 
@@ -213,7 +213,7 @@ class PaymentCreateAPIViewTest(TestCase):
         data = {
             'payment_sum': 1000,
             'description': 'Test payment',
-            'payment_method': '1'
+            'payment_method': '1'  # Добавьте поле payment_method
         }
 
         # Создание запроса

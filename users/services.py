@@ -1,5 +1,6 @@
 import os
 
+import requests
 import stripe
 from forex_python.converter import CurrencyRates, RatesNotAvailableError
 
@@ -7,17 +8,21 @@ stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 
 
 def rub_converter(amount):
-    """Конвертация пендоской валюты в нормальную"""
+    """Конвертация валюты с использованием альтернативного API"""
     try:
-        c = CurrencyRates()
-        rate = c.get_rate('USD', 'RUB')  # Получаем курс доллара к рублю
+        response = requests.get("https://api.exchangeratesapi.io/latest?base=USD&symbols=RUB")
+        response.raise_for_status()
+        data = response.json()
+        rate = data["rates"]["RUB"]
         return int(rate * amount), None  # Умножаем сумму на курс и преобразуем в целое число
-    except RatesNotAvailableError as e:
+    except requests.exceptions.RequestException as e:
         # Обработка случая, когда сервис недоступен
-        return None, f"Currency rates are not available: {e}"
+        print(f"Currency rates are not available: {e}")
+        return int(70 * amount), None  # Резервный курс
     except Exception as e:
         # Другие исключения, которые могут возникнуть при конвертации
-        return None, f"An error occurred: {e}"
+        print(f"An error occurred: {e}")
+        return int(70 * amount), None  # Резервный курс
 
 
 def create_stripe_price(amount):
