@@ -117,30 +117,30 @@ class Payment(models.Model):
         verbose_name_plural = "платежи"
         ordering = ("-payment_date",)
 
-    def create_checkout_session(self, product_name, price, success_url, cancel_url):
-        """Создание сессии оплаты в Stripe"""
-        try:
-            converted_price, error = rub_converter(price)
-            if error:
-                # Если конвертация не удалась, используем исходную цену
-                converted_price = price
-            else:
-                # Конвертируем цену в копейки для Stripe
-                converted_price = converted_price * 100
-
-            product = stripe.Product.create(name=product_name, type="service")
-            price = stripe.Price.create(product=product.id, unit_amount=converted_price, currency="usd")
-            session = stripe.checkout.Session.create(
-                payment_method_types=["card"],
-                line_items=[{"price": price.id, "quantity": 1}],
-                mode="payment",
-                success_url=success_url,
-                cancel_url=cancel_url,
-            )
-            self.session_id = session.id
-            self.link = session.url
-            self.save()
-            return session.id, session.url
-        except stripe.error.StripeError as e:
-            # Обработка ошибок Stripe
-            return None, str(e)
+    # def create_checkout_session(self, product_name, price, success_url, cancel_url):
+    #     """Создание сессии оплаты в Stripe"""
+    #     try:
+    #         converted_price, error = rub_converter(price)
+    #         if error:
+    #             # Если конвертация не удалась, используем исходную цену
+    #             converted_price = price
+    #         else:
+    #             # Конвертируем цену в копейки для Stripe
+    #             converted_price = converted_price * 100
+    #
+    #         product = stripe.Product.create(name=product_name, type="service")
+    #         price = stripe.Price.create(product=product.id, unit_amount=converted_price, currency="usd")
+    #         session = stripe.checkout.Session.create(
+    #             payment_method_types=["card"],
+    #             line_items=[{"price": price.id, "quantity": 1}],
+    #             mode="payment",
+    #             success_url=success_url,
+    #             cancel_url=cancel_url,
+    #         )
+    #         self.session_id = session.id
+    #         self.link = session.url
+    #         self.save()
+    #         return session.id, session.url
+    #     except stripe.error.StripeError as e:
+    #         # Обработка ошибок Stripe
+    #         return None, str(e)
