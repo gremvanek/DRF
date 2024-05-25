@@ -188,6 +188,8 @@ from users.views import PaymentCreateAPIView
 #         self.assertEqual(response.status_code, 200)
 
 class PaymentCreateAPIViewTest(TestCase):
+    """Тест для создания оплаты курса. Что интересно не проходил из-за возможного сообщения об ошибке. То есть не
+    понимал что за тип данных он может получить."""
 
     def setUp(self):
         self.factory = APIRequestFactory()
