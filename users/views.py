@@ -33,6 +33,7 @@ class PaymentCreateAPIView(generics.CreateAPIView):
         amount_in_rub, error = rub_converter(payment.payment_sum)
         if error:
             raise ValidationError({"payment_sum": error})
+
         price = create_stripe_price(amount_in_rub)
         session_id, payment_link = create_stripe_sessions(price)
         payment.session_id = session_id

@@ -1,4 +1,5 @@
 import os
+from typing import Tuple
 
 import requests
 import stripe
@@ -7,17 +8,21 @@ from forex_python.converter import CurrencyRates, RatesNotAvailableError
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 
 
-def rub_converter(amount):
-    """Конвертация валюты с использованием альтернативного API"""
+def rub_converter(amount: float) -> Tuple[int, None]:
+
     try:
-        response = requests.get("https://api.exchangeratesapi.io/latest?base=USD&symbols=RUB")
+        response = requests.get("https://www.cbr-xml-daily.ru/daily_json.js")
         response.raise_for_status()
         data = response.json()
-        rate = data["rates"]["RUB"]
+        rate = data["Valute"]["USD"]["Value"]
         return int(rate * amount), None  # Умножаем сумму на курс и преобразуем в целое число
     except requests.exceptions.RequestException as e:
         # Обработка случая, когда сервис недоступен
         print(f"Currency rates are not available: {e}")
+        return int(70 * amount), None  # Резервный курс
+    except KeyError as e:
+        # Обработка случая, когда в ответе нет нужных данных
+        print(f"Key error: {e}")
         return int(70 * amount), None  # Резервный курс
     except Exception as e:
         # Другие исключения, которые могут возникнуть при конвертации
@@ -28,9 +33,9 @@ def rub_converter(amount):
 def create_stripe_price(amount):
     """Создание цены в стрипе"""
     return stripe.Price.create(
-        currency="usd",
+        currency="rub",
         unit_amount=amount * 100,
-        product_data={"name": "Course payment"},
+        product_data={"name": "Оплата курса"},
     )
 
 

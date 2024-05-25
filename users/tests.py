@@ -2,7 +2,7 @@ import unittest
 
 from django.urls import reverse
 from rest_framework import status
-from rest_framework.test import APIClient, APIRequestFactory, force_authenticate
+from rest_framework.test import APIClient, APIRequestFactory, force_authenticate, APITestCase
 from django.contrib.auth import get_user_model
 from unittest.mock import patch
 from django.test import TestCase
@@ -186,19 +186,15 @@ from users.views import PaymentCreateAPIView
 #         url = reverse("users:payment_retrieve", kwargs={"pk": payment.pk})
 #         response = self.client.get(url)
 #         self.assertEqual(response.status_code, 200)
+User = get_user_model()
 
-class PaymentCreateAPIViewTest(TestCase):
-    """Тест для создания оплаты курса. Что интересно не проходил из-за возможного сообщения об ошибке. То есть не
-    понимал что за тип данных он может получить."""
+
+class PaymentCreateAPIViewTest(APITestCase):
 
     def setUp(self):
+        self.user = User.objects.create_user(email='test@mail.ru', password='password')
         self.factory = APIRequestFactory()
-        self.client = APIClient()
-        self.user = get_user_model().objects.create_user(
-            email='testuser@example.com',
-            password='testpassword'
-        )
-        self.url = reverse('users:payments')
+        self.url = '/payments/create/'
 
     @patch('users.views.rub_converter')
     @patch('users.views.create_stripe_price')
@@ -212,7 +208,6 @@ class PaymentCreateAPIViewTest(TestCase):
         # Данные для POST-запроса
         data = {
             'payment_sum': 1000,
-            'description': 'Test payment',
             'payment_method': '1'  # Добавьте поле payment_method
         }
 
