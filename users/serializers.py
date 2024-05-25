@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
 from rest_framework.fields import SerializerMethodField, CharField
 from rest_framework.generics import get_object_or_404
 from rest_framework.serializers import ModelSerializer
@@ -31,6 +32,16 @@ class PaymentSerializer(ModelSerializer):
     class Meta:
         model = Payment
         fields = "__all__"
+
+    def validate_payment_sum(self, value):
+        if value <= 0:
+            raise ValidationError("Payment sum must be greater than 0")
+        return value
+
+    def validate_description(self, value):
+        if not value:
+            raise ValidationError("Description cannot be empty")
+        return value
 
 
 # class PaymentCreateSerializer(ModelSerializer):

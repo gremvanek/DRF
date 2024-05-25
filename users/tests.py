@@ -1,13 +1,13 @@
 import unittest
-from unittest.mock import patch
-from .models import Course, Lesson, User
-from unittest import TestCase, mock
-from rest_framework.test import APIClient, APIRequestFactory, force_authenticate
-from rest_framework import status
-from django.contrib.auth import get_user_model
+
 from django.urls import reverse
-from .models import Payment
-from .views import PaymentCreateAPIView
+from rest_framework import status
+from rest_framework.test import APIClient, APIRequestFactory, force_authenticate
+from django.contrib.auth import get_user_model
+from unittest.mock import patch
+from django.test import TestCase
+from users.models import Payment
+from users.views import PaymentCreateAPIView
 
 
 # class TestPaymentMethods(TestCase):
@@ -48,36 +48,36 @@ from .views import PaymentCreateAPIView
 #     @patch("stripe.Product.create")
 #     @patch("stripe.Price.create")
 #     @patch("stripe.checkout.Session.create")
-    # def test_create_checkout_session(self, mock_session_create, mock_price_create, mock_product_create):
-    #     mock_product_create.return_value.id = "prod_test"
-    #     mock_price_create.return_value.id = "price_test"
-    #     mock_session_create.return_value.id = "session_test"
-    #     mock_session_create.return_value.url = "http://example.com/session"
-    #
-    #     success_url = "http://example.com/success"
-    #     cancel_url = "http://example.com/cancel"
-    #
-    #     # Метод create_checkout_session должен быть частью модели Payment
-    #     session_id, session_url = self.payment.create_checkout_session(
-    #         product_name="Test Product",
-    #         price=10000,
-    #         success_url=success_url,
-    #         cancel_url=cancel_url,
-    #     )
-    #
-    #     self.assertEqual(session_id, "session_test")
-    #     self.assertEqual(session_url, "http://example.com/session")
-    #     self.payment.refresh_from_db()
-    #     self.assertEqual(self.payment.session_id, "session_test")
-    #     mock_product_create.assert_called_once_with(name="Test Product", type="service")
-    #     mock_price_create.assert_called_once_with(product="prod_test", unit_amount=100 * 100, currency="usd")
-    #     mock_session_create.assert_called_once_with(
-    #         payment_method_types=["card"],
-    #         line_items=[{"price": "price_test", "quantity": 1}],
-    #         mode="payment",
-    #         success_url=success_url,
-    #         cancel_url=cancel_url,
-    #     )
+# def test_create_checkout_session(self, mock_session_create, mock_price_create, mock_product_create):
+#     mock_product_create.return_value.id = "prod_test"
+#     mock_price_create.return_value.id = "price_test"
+#     mock_session_create.return_value.id = "session_test"
+#     mock_session_create.return_value.url = "http://example.com/session"
+#
+#     success_url = "http://example.com/success"
+#     cancel_url = "http://example.com/cancel"
+#
+#     # Метод create_checkout_session должен быть частью модели Payment
+#     session_id, session_url = self.payment.create_checkout_session(
+#         product_name="Test Product",
+#         price=10000,
+#         success_url=success_url,
+#         cancel_url=cancel_url,
+#     )
+#
+#     self.assertEqual(session_id, "session_test")
+#     self.assertEqual(session_url, "http://example.com/session")
+#     self.payment.refresh_from_db()
+#     self.assertEqual(self.payment.session_id, "session_test")
+#     mock_product_create.assert_called_once_with(name="Test Product", type="service")
+#     mock_price_create.assert_called_once_with(product="prod_test", unit_amount=100 * 100, currency="usd")
+#     mock_session_create.assert_called_once_with(
+#         payment_method_types=["card"],
+#         line_items=[{"price": "price_test", "quantity": 1}],
+#         mode="payment",
+#         success_url=success_url,
+#         cancel_url=cancel_url,
+#     )
 
 
 # class PaymentListCreateRetrieveAPITest(TestCase):
@@ -203,14 +203,15 @@ class PaymentCreateAPIViewTest(TestCase):
     @patch('users.views.create_stripe_sessions')
     def test_perform_create(self, mock_create_stripe_sessions, mock_create_stripe_price, mock_rub_converter):
         # Настраиваем mock-объекты
-        mock_rub_converter.return_value = 100
+        mock_rub_converter.return_value = 100, None
         mock_create_stripe_price.return_value = 'stripe_price_id'
         mock_create_stripe_sessions.return_value = ('session_id', 'http://payment_link')
 
         # Данные для POST-запроса
         data = {
             'payment_sum': 1000,
-            'description': 'Test payment'
+            'description': 'Test payment',
+            'payment_method': '1'
         }
 
         # Создание запроса
@@ -220,6 +221,10 @@ class PaymentCreateAPIViewTest(TestCase):
 
         # Выполнение запроса и проверка ответа
         response = view(request)
+
+        # Вывод содержимого ответа для отладки
+        print(response.data)
+
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         # Проверка созданного объекта Payment

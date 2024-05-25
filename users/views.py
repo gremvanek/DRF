@@ -1,3 +1,4 @@
+from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404
 from django_filters import OrderingFilter
 from django_filters.rest_framework import DjangoFilterBackend
@@ -29,8 +30,10 @@ class PaymentCreateAPIView(generics.CreateAPIView):
 
     def perform_create(self, serializer):
         payment = serializer.save(user=self.request.user)
-        amount_in_durara = rub_converter(payment.payment_sum)
-        price = create_stripe_price(amount_in_durara)
+        amount_in_rub, error = rub_converter(payment.payment_sum)
+        if error:
+            raise ValidationError({"payment_sum": error})
+        price = create_stripe_price(amount_in_rub)
         session_id, payment_link = create_stripe_sessions(price)
         payment.session_id = session_id
         payment.link = payment_link
