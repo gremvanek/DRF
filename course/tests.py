@@ -91,7 +91,9 @@ class SubscriptionTestCase(APITestCase):
             "course": self.course.id,
         }
 
-        url = reverse('course:subscription_create')  # Обратите внимание на использование reverse
+        url = reverse(
+            "course:subscription_create"
+        )  # Обратите внимание на использование reverse
         response = self.client.post(url, data=data, format="json")
 
         # Проверка статуса ответа
@@ -120,11 +122,11 @@ class SubscriptionTestCase(APITestCase):
         }
 
         # Создание подписки
-        response = self.client.post(reverse('course:subscription_create'), data=data)
+        response = self.client.post(reverse("course:subscription_create"), data=data)
         self.assertEqual(response.json(), {"message": "подписка добавлена"})
         print(response.json())
 
         # Удаление подписки
-        response = self.client.delete(reverse('course:subscription_delete'), data=data)
+        response = self.client.delete(reverse("course:subscription_delete"), data=data)
         self.assertEqual(response.json(), {"message": "подписка удалена"})
         print(response.json())

@@ -1,7 +1,5 @@
-from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from rest_framework.fields import SerializerMethodField, CharField
-from rest_framework.generics import get_object_or_404
 from rest_framework.serializers import ModelSerializer
 from course.serializers import CourseSerializer, LessonSerializer
 from users.models import User, Payment
@@ -12,14 +10,14 @@ class UserSerializer(ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'email', 'password', 'phone', 'city', 'avatar', 'role']
+        fields = ["id", "email", "password", "phone", "city", "avatar", "role"]
 
     def create(self, validated_data):
         user = User.objects.create_user(**validated_data)
         return user
 
     def update(self, instance, validated_data):
-        password = validated_data.pop('password', None)
+        password = validated_data.pop("password", None)
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         if password:

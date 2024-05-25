@@ -34,13 +34,11 @@ urlpatterns = [
         name="subscription_create",
     ),
     path(
-        "subscription/",
-        SubscriptionListAPIView.as_view(),
-        name="subscription_list"
+        "subscription/", SubscriptionListAPIView.as_view(), name="subscription_list"
     ),  # Обработка GET и POST запросов
     path(
         "subscription/delete/",
         SubscriptionListAPIView.as_view(),
-        name="subscription_delete"
+        name="subscription_delete",
     ),  # Обработка DELETE запросов
 ] + router.urls

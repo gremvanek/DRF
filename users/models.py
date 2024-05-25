@@ -1,14 +1,9 @@
-import os
-
-import stripe
 from django.contrib.auth.base_user import BaseUserManager
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 
-from course.models import Course, Lesson
 from drf import settings
-from users.services import rub_converter
 
 NULLABLE = {"blank": True, "null": True}
 
@@ -21,7 +16,7 @@ class UserRoles(models.TextChoices):
 class UserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
         if not email:
-            raise ValueError('The Email field must be set')
+            raise ValueError("The Email field must be set")
         email = self.normalize_email(email)
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
@@ -29,13 +24,13 @@ class UserManager(BaseUserManager):
         return user
 
     def create_superuser(self, email, password=None, **extra_fields):
-        extra_fields.setdefault('is_staff', True)
-        extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault("is_staff", True)
+        extra_fields.setdefault("is_superuser", True)
 
-        if extra_fields.get('is_staff') is not True:
-            raise ValueError('Superuser must have is_staff=True.')
-        if extra_fields.get('is_superuser') is not True:
-            raise ValueError('Superuser must have is_superuser=True.')
+        if extra_fields.get("is_staff") is not True:
+            raise ValueError("Superuser must have is_staff=True.")
+        if extra_fields.get("is_superuser") is not True:
+            raise ValueError("Superuser must have is_superuser=True.")
 
         return self.create_user(email, password, **extra_fields)
 
@@ -46,7 +41,7 @@ class User(AbstractUser):
     phone = models.CharField(max_length=12, **NULLABLE, verbose_name="телефон")
     city = models.CharField(max_length=100, **NULLABLE, verbose_name="город")
     avatar = models.ImageField(upload_to="users/", **NULLABLE, verbose_name="аватарка")
-    is_moderator = models.BooleanField(verbose_name='Модератор', **NULLABLE)
+    is_moderator = models.BooleanField(verbose_name="Модератор", **NULLABLE)
     role = models.CharField(
         max_length=20,
         choices=UserRoles.choices,
@@ -78,14 +73,14 @@ class Payment(models.Model):
         **NULLABLE,
     )
     course = models.ForeignKey(
-        'course.Course',
+        "course.Course",
         on_delete=models.CASCADE,
         verbose_name="оплаченный курс",
         related_name="courses",
         **NULLABLE,
     )
     lesson = models.ForeignKey(
-        'course.Lesson',
+        "course.Lesson",
         on_delete=models.CASCADE,
         verbose_name="оплаченный урок",
         related_name="lessons",
@@ -100,13 +95,16 @@ class Payment(models.Model):
     )
     is_paid = models.BooleanField(default=False, verbose_name="статус оплаты")
     session_id = models.CharField(
-        max_length=180, verbose_name="сессия для оплаты", **NULLABLE, help_text='Укажите id сессии'
+        max_length=180,
+        verbose_name="сессия для оплаты",
+        **NULLABLE,
+        help_text="Укажите id сессии",
     )
     link = models.URLField(
         max_length=400,
         **NULLABLE,
-        verbose_name='Ссылка для оплаты',
-        help_text='Укажите ссылку для оплаты'
+        verbose_name="Ссылка для оплаты",
+        help_text="Укажите ссылку для оплаты",
     )
 
     def __str__(self):

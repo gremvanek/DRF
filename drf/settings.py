@@ -44,11 +44,9 @@ INSTALLED_APPS = [
     "drf_spectacular_sidecar",
     "course",
     "users",
-
-    'corsheaders',
-
-    'stripe',
-    'django_celery_beat',
+    "corsheaders",
+    "stripe",
+    "django_celery_beat",
 ]
 
 MIDDLEWARE = [
@@ -59,7 +57,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    'corsheaders.middleware.CorsMiddleware',
+    "corsheaders.middleware.CorsMiddleware",
 ]
 
 ROOT_URLCONF = "drf.urls"
@@ -152,9 +150,9 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.AllowAny",
     ],
-    'DEFAULT_FILTER_BACKENDS': [
-        'django_filters.rest_framework.DjangoFilterBackend',
-        'rest_framework.filters.OrderingFilter',
+    "DEFAULT_FILTER_BACKENDS": [
+        "django_filters.rest_framework.DjangoFilterBackend",
+        "rest_framework.filters.OrderingFilter",
     ],
 }
 # Настройки для спектакля
@@ -182,7 +180,7 @@ LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/"
 # Настройки для Cors
 CORS_ALLOWED_ORIGINS = [
-    'https://127.0.0.1:8000',
+    "https://127.0.0.1:8000",
 ]
 CSRF_TRUSTED_ORIGINS = [
     "https://read-and-write.example.com",

@@ -1,11 +1,13 @@
 import unittest
 
-from django.urls import reverse
 from rest_framework import status
-from rest_framework.test import APIClient, APIRequestFactory, force_authenticate, APITestCase
+from rest_framework.test import (
+    APIRequestFactory,
+    force_authenticate,
+    APITestCase,
+)
 from django.contrib.auth import get_user_model
 from unittest.mock import patch
-from django.test import TestCase
 from users.models import Payment
 from users.views import PaymentCreateAPIView
 
@@ -192,27 +194,29 @@ User = get_user_model()
 class PaymentCreateAPIViewTest(APITestCase):
 
     def setUp(self):
-        self.user = User.objects.create_user(email='test@mail.ru', password='password')
+        self.user = User.objects.create_user(email="test@mail.ru", password="password")
         self.factory = APIRequestFactory()
-        self.url = '/payments/create/'
+        self.url = "/payments/create/"
 
-    @patch('users.views.rub_converter')
-    @patch('users.views.create_stripe_price')
-    @patch('users.views.create_stripe_sessions')
-    def test_perform_create(self, mock_create_stripe_sessions, mock_create_stripe_price, mock_rub_converter):
+    @patch("users.views.rub_converter")
+    @patch("users.views.create_stripe_price")
+    @patch("users.views.create_stripe_sessions")
+    def test_perform_create(
+        self, mock_create_stripe_sessions, mock_create_stripe_price, mock_rub_converter
+    ):
         # Настраиваем mock-объекты
         mock_rub_converter.return_value = (100, None)
-        mock_create_stripe_price.return_value = 'stripe_price_id'
-        mock_create_stripe_sessions.return_value = ('session_id', 'http://payment_link')
+        mock_create_stripe_price.return_value = "stripe_price_id"
+        mock_create_stripe_sessions.return_value = ("session_id", "http://payment_link")
 
         # Данные для POST-запроса
         data = {
-            'payment_sum': 1000,
-            'payment_method': '1'  # Добавьте поле payment_method
+            "payment_sum": 1000,
+            "payment_method": "1",  # Добавьте поле payment_method
         }
 
         # Создание запроса
-        request = self.factory.post(self.url, data, format='json')
+        request = self.factory.post(self.url, data, format="json")
         force_authenticate(request, user=self.user)
         view = PaymentCreateAPIView.as_view()
 
@@ -228,13 +232,13 @@ class PaymentCreateAPIViewTest(APITestCase):
         payment = Payment.objects.get()
         self.assertEqual(payment.user, self.user)
         self.assertEqual(payment.payment_sum, 1000)
-        self.assertEqual(payment.session_id, 'session_id')
-        self.assertEqual(payment.link, 'http://payment_link')
+        self.assertEqual(payment.session_id, "session_id")
+        self.assertEqual(payment.link, "http://payment_link")
 
         # Проверка вызовов mock-объектов
         mock_rub_converter.assert_called_once_with(1000)
         mock_create_stripe_price.assert_called_once_with(100)
-        mock_create_stripe_sessions.assert_called_once_with('stripe_price_id')
+        mock_create_stripe_sessions.assert_called_once_with("stripe_price_id")
 
 
 if __name__ == "__main__":

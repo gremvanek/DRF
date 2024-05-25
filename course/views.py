@@ -120,7 +120,9 @@ class SubscriptionListAPIView(generics.ListAPIView):
         user = request.user
         course_id = request.data.get("course")
         course_item = get_object_or_404(Course, pk=course_id)
-        subscription_item = Subscription.objects.filter(user=user, course=course_item).first()
+        subscription_item = Subscription.objects.filter(
+            user=user, course=course_item
+        ).first()
 
         if subscription_item:
             subscription_item.delete()

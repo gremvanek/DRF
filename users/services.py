@@ -3,7 +3,6 @@ from typing import Tuple
 
 import requests
 import stripe
-from forex_python.converter import CurrencyRates, RatesNotAvailableError
 
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 
@@ -15,7 +14,10 @@ def rub_converter(amount: float) -> Tuple[int, None]:
         response.raise_for_status()
         data = response.json()
         rate = data["Valute"]["USD"]["Value"]
-        return int(rate * amount), None  # Умножаем сумму на курс и преобразуем в целое число
+        return (
+            int(rate * amount),
+            None,
+        )  # Умножаем сумму на курс и преобразуем в целое число
     except requests.exceptions.RequestException as e:
         # Обработка случая, когда сервис недоступен
         print(f"Currency rates are not available: {e}")
@@ -53,6 +55,7 @@ def retrieve_session(session):
     """Возвращаем obj сессии по API, id передаем в аргумент функции"""
     stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
     return stripe.checkout.Session.retrieve(session)
+
 
 # def get_session(instance):
 #     """Возаращаем сессию для оплаты курса или урока по API"""

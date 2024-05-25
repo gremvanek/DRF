@@ -9,9 +9,15 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from users.models import User, Payment
 from users.serializers import (
     UserSerializer,
-    PaymentSerializer, PaymentRetrieveSerializer
+    PaymentSerializer,
+    PaymentRetrieveSerializer,
 )
-from users.services import rub_converter, create_stripe_price, create_stripe_sessions, retrieve_session
+from users.services import (
+    rub_converter,
+    create_stripe_price,
+    create_stripe_sessions,
+    retrieve_session,
+)
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -19,8 +25,10 @@ class UserViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
 
     def get_permissions(self):
-        if self.action == 'create':
-            self.permission_classes = [AllowAny,]
+        if self.action == "create":
+            self.permission_classes = [
+                AllowAny,
+            ]
         return super().get_permissions()
 
 
@@ -68,6 +76,8 @@ class PaymentRetrieveAPIView(generics.RetrieveAPIView):
             obj.save()
         self.check_object_permissions(self.request, obj)
         return obj
+
+
 #
 #
 # class PaymentCreateAPIView(generics.CreateAPIView):
@@ -87,4 +97,3 @@ class PaymentRetrieveAPIView(generics.RetrieveAPIView):
 #         new_pay.user = self.request.user
 #         new_pay.session = get_session(new_pay).id
 #         new_pay.save()
-
