@@ -40,10 +40,19 @@ class LessonTestCase(APITestCase):
     def test_retrieve_lesson(self):
         """Тестирование просмотра информации об уроке"""
         path = reverse("course:lesson_get", kwargs={"pk": self.lesson.pk})
+
         response = self.client.get(path)
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["name"], self.lesson.name)
+
+    def test_retrieve_nonexistent_lesson(self):
+        """Тестирование запроса несуществующего урока"""
+        nonexistent_lesson_id = 9999  # ID, которого нет в базе данных
+        path = reverse('course:lesson_get', args=[nonexistent_lesson_id])
+        response = self.client.get(path)
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_update_lesson(self):
         """Тестирование редактирования урока"""
@@ -106,6 +115,7 @@ class SubscriptionTestCase(APITestCase):
         print(response.json())
         self.assertEqual(response.json(), {"message": "подписка добавлена"})
 
+
     def test_list_subscription(self):
         response = self.client.get(reverse("course:subscription_list"))
         print(response.json())
@@ -120,7 +130,6 @@ class SubscriptionTestCase(APITestCase):
             "user": self.user.id,
             "course": self.course.id,
         }
-
         # Создание подписки
         response = self.client.post(reverse("course:subscription_create"), data=data)
         self.assertEqual(response.json(), {"message": "подписка добавлена"})
@@ -130,3 +139,4 @@ class SubscriptionTestCase(APITestCase):
         response = self.client.delete(reverse("course:subscription_delete"), data=data)
         self.assertEqual(response.json(), {"message": "подписка удалена"})
         print(response.json())
+

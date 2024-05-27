@@ -6,6 +6,7 @@ from rest_framework import viewsets, generics, status
 from rest_framework.permissions import IsAuthenticated, BasePermission
 from rest_framework.response import Response
 
+
 from course.models import Course, Lesson
 from course.paginators import LessonPagination, LearningPagination
 from course.permissions import IsModerator, IsOwner
@@ -107,6 +108,7 @@ class SubscriptionCreateAPIView(generics.CreateAPIView):
             message = "подписка добавлена"
 
         return Response({"message": message})
+
 
 
 class SubscriptionListAPIView(generics.ListAPIView):
