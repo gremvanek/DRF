@@ -11,5 +11,5 @@ def send_mail_about_updates(course_name=None, recipient_email=None):
             message=f"Курс {course_name} обновлен. Ознакомьтесь с новыми материалами!",
             from_email=settings.EMAIL_HOST_USER,
             recipient_list=[recipient_email],
-            fail_silently=False
+            fail_silently=False,
         )

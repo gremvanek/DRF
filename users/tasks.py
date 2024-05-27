@@ -6,12 +6,12 @@ from datetime import timedelta
 
 @shared_task
 def check_last_data():
-    """ Это скрипт, который проверяет последние дата входа пользователя и то,
-    заходил ли он в последний раз больше месяца назад, потом он деактивируется. """
+    """Это скрипт, который проверяет последние дата входа пользователя и то,
+    заходил ли он в последний раз больше месяца назад, потом он деактивируется."""
     User = get_user_model()
     deadline_data = timezone.now() - timedelta(days=30)
     inactive_users = User.objects.filter(last_login__lt=deadline_data, is_active=True)
     deactivated_users_count = inactive_users.count()
     inactive_users.update(is_active=False)
-    print(f'Deactivated {deactivated_users_count} users')
+    print(f"Deactivated {deactivated_users_count} users")
     return deactivated_users_count

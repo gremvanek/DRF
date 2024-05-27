@@ -138,11 +138,12 @@ class SubscriptionTestCase(APITestCase):
 
 # Тест для Celery #################################
 
+
 class TestSendMailAboutUpdates(TestCase):
     def setUp(self):
         # Использование EmailBackend вместо реального SMTP-сервера во время тестов
         self.old_email_backend = settings.EMAIL_BACKEND
-        settings.EMAIL_BACKEND = 'django.core.mail.backends.locmem.EmailBackend'
+        settings.EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
         mail.outbox = []  # Очистка outbox перед каждым тестом
 
     def tearDown(self):
@@ -154,11 +155,16 @@ class TestSendMailAboutUpdates(TestCase):
         recipient_email = "example@example.com"
 
         # Act
-        send_mail_about_updates(course_name=course_name, recipient_email=recipient_email)
+        send_mail_about_updates(
+            course_name=course_name, recipient_email=recipient_email
+        )
 
         # Assert
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].subject, "Уведомление об обновлении курса!")
-        self.assertEqual(mail.outbox[0].body, f"Курс {course_name} обновлен. Ознакомьтесь с новыми материалами!")
+        self.assertEqual(
+            mail.outbox[0].body,
+            f"Курс {course_name} обновлен. Ознакомьтесь с новыми материалами!",
+        )
         self.assertEqual(mail.outbox[0].from_email, settings.EMAIL_HOST_USER)
         self.assertEqual(mail.outbox[0].to, [recipient_email])

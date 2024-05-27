@@ -217,23 +217,21 @@ CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND")
 
 # Настройки для Celery
 CELERY_BEAT_SCHEDULE = {
-    'task-name': {
-        'task': 'courses.tasks.send_mail_about_updates',
-        'schedule': timedelta(minutes=1),
+    "task-name": {
+        "task": "courses.tasks.send_mail_about_updates",
+        "schedule": timedelta(minutes=1),
     },
 }
 
-if 'test' in sys.argv:
+if "test" in sys.argv:
     CELERY_TASK_ALWAYS_EAGER = True
 
-CELERY_ACCEPT_CONTENT = ['json']
-CELERY_TASK_SERIALIZER = 'json'
-CELERY_RESULT_SERIALIZER = 'json'
-CELERY_TIMEZONE = 'Asia/Yekaterinburg'
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_TIMEZONE = "Asia/Yekaterinburg"
 CELERY_TASK_TRACK_STARTED = True
 CELERY_TASK_TIME_LIMIT = 30 * 60
 
 EMAIL_USE_TLS = False
 EMAIL_USE_SSL = True
-
-

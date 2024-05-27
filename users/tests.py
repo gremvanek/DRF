@@ -205,7 +205,7 @@ class PaymentCreateAPIViewTest(APITestCase):
     @patch("users.views.create_stripe_price")
     @patch("users.views.create_stripe_sessions")
     def test_perform_create(
-            self, mock_create_stripe_sessions, mock_create_stripe_price, mock_rub_converter
+        self, mock_create_stripe_sessions, mock_create_stripe_price, mock_rub_converter
     ):
         # Настраиваем mock-объекты
         mock_rub_converter.return_value = (100, None)
@@ -248,9 +248,9 @@ class TestCheckLastData(TestCase):
     def test_check_last_data(self):
         # Arrange
         User = get_user_model()
-        user1 = User.objects.create(email='user1@example.com')
-        user2 = User.objects.create(email='user2@example.com')
-        user3 = User.objects.create(email='user3@example.com')
+        user1 = User.objects.create(email="user1@example.com")
+        user2 = User.objects.create(email="user2@example.com")
+        user3 = User.objects.create(email="user3@example.com")
 
         # Предположим, что user1 и user2 были активными и заходили в систему более месяца назад
         user1.last_login = timezone.now() - timedelta(days=31)
@@ -266,9 +266,13 @@ class TestCheckLastData(TestCase):
         deactivated_users_count = check_last_data()
 
         # Assert
-        self.assertEqual(User.objects.filter(is_active=False).count(), 2)  # user1 и user2 должны быть деактивированы
+        self.assertEqual(
+            User.objects.filter(is_active=False).count(), 2
+        )  # user1 и user2 должны быть деактивированы
         self.assertTrue(user3.is_active)  # user3 не должен быть деактивирован
-        self.assertEqual(deactivated_users_count, 2)  # Проверяем количество деактивированных пользователей
+        self.assertEqual(
+            deactivated_users_count, 2
+        )  # Проверяем количество деактивированных пользователей
 
 
 if __name__ == "__main__":
