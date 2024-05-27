@@ -9,10 +9,10 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         user = User.objects.create(
             email=settings.ROOT_EMAIL,
-            first_name='Admin',
-            last_name='SkyPro',
+            first_name="Admin",
+            last_name="SkyPro",
             is_staff=True,
-            is_superuser=True
+            is_superuser=True,
         )
 
         user.set_password(settings.ROOT_PASSWORD)
