@@ -55,6 +55,7 @@ class Subscription(models.Model):
     )
     course = models.ForeignKey(Course, on_delete=models.CASCADE, verbose_name="курс")
 
+
     def __str__(self):
         return f"{self.user} - {self.course}"
 
