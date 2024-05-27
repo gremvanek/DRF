@@ -11,5 +11,7 @@ def check_last_data():
     User = get_user_model()
     deadline_data = timezone.now() - timedelta(days=30)
     inactive_users = User.objects.filter(last_login__lt=deadline_data, is_active=True)
+    deactivated_users_count = inactive_users.count()
     inactive_users.update(is_active=False)
-    print(f'Deactivated {inactive_users.count()} users')
+    print(f'Deactivated {deactivated_users_count} users')
+    return deactivated_users_count
