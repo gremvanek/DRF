@@ -1,8 +1,12 @@
+from django.core import mail
 from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
 from django.urls import reverse
 from course.models import Course, Lesson
+from drf import settings
 from users.models import User
+from django.test import TestCase
+from course.tasks import send_mail_about_updates
 
 
 class LessonTestCase(APITestCase):
@@ -140,3 +144,35 @@ class SubscriptionTestCase(APITestCase):
         self.assertEqual(response.json(), {"message": "подписка удалена"})
         print(response.json())
 
+# Тест для Celery #################################
+
+
+class TestSendMailAboutUpdates(TestCase):
+    def setUp(self):
+        # Использование EmailBackend вместо реального SMTP-сервера во время тестов
+        self.old_email_backend = settings.EMAIL_BACKEND
+        settings.EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
+        mail.outbox = []  # Очистка outbox перед каждым тестом
+
+    def tearDown(self):
+        settings.EMAIL_BACKEND = self.old_email_backend
+
+    def test_send_mail_about_updates(self):
+        # Arrange
+        course_name = "Математика"
+        recipient_email = "example@example.com"
+
+        # Act
+        send_mail_about_updates(
+            course_name=course_name, recipient_email=recipient_email
+        )
+
+        # Assert
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].subject, "Уведомление об обновлении курса!")
+        self.assertEqual(
+            mail.outbox[0].body,
+            f"Курс {course_name} обновлен. Ознакомьтесь с новыми материалами!",
+        )
+        self.assertEqual(mail.outbox[0].from_email, settings.EMAIL_HOST_USER)
+        self.assertEqual(mail.outbox[0].to, [recipient_email])

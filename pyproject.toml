@@ -33,6 +33,9 @@ isorted = "^0.2"
 django-cors-headers = "^4.3.1"
 django-celery-beat = "^2.6.0"
 forex-python = "^1.8"
+celery = "^5.4.0"
+redis = "^5.0.4"
+docker = "^7.1.0"
 
 
 [build-system]

@@ -1,4 +1,5 @@
 import unittest
+from unittest import TestCase
 
 from rest_framework import status
 from rest_framework.test import (
@@ -6,11 +7,13 @@ from rest_framework.test import (
     force_authenticate,
     APITestCase,
 )
+from django.utils import timezone
+from datetime import timedelta
 from django.contrib.auth import get_user_model
 from unittest.mock import patch
 from users.models import Payment
+from users.tasks import check_last_data
 from users.views import PaymentCreateAPIView
-
 
 # class TestPaymentMethods(TestCase):
 #     def setUp(self):
@@ -239,6 +242,37 @@ class PaymentCreateAPIViewTest(APITestCase):
         mock_rub_converter.assert_called_once_with(1000)
         mock_create_stripe_price.assert_called_once_with(100)
         mock_create_stripe_sessions.assert_called_once_with("stripe_price_id")
+
+
+class TestCheckLastData(TestCase):
+    def test_check_last_data(self):
+        # Arrange
+        User = get_user_model()
+        user1 = User.objects.create(email="user1@example.com")
+        user2 = User.objects.create(email="user2@example.com")
+        user3 = User.objects.create(email="user3@example.com")
+
+        # Предположим, что user1 и user2 были активными и заходили в систему более месяца назад
+        user1.last_login = timezone.now() - timedelta(days=31)
+        user1.save()
+        user2.last_login = timezone.now() - timedelta(days=32)
+        user2.save()
+
+        # user3 заходил в систему недавно и не должен быть деактивирован
+        user3.last_login = timezone.now() - timedelta(days=10)
+        user3.save()
+
+        # Act
+        deactivated_users_count = check_last_data()
+
+        # Assert
+        self.assertEqual(
+            User.objects.filter(is_active=False).count(), 2
+        )  # user1 и user2 должны быть деактивированы
+        self.assertTrue(user3.is_active)  # user3 не должен быть деактивирован
+        self.assertEqual(
+            deactivated_users_count, 2
+        )  # Проверяем количество деактивированных пользователей
 
 
 if __name__ == "__main__":

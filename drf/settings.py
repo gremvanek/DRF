@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 
 import os
+import sys
 from datetime import timedelta
 from pathlib import Path
 
@@ -208,3 +209,29 @@ if CACHE_ENABLED:
             },
         }
     }
+# URL-адрес брокера сообщений
+CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL")
+
+# URL-адрес брокера результатов, также Redis
+CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND")
+
+# Настройки для Celery
+CELERY_BEAT_SCHEDULE = {
+    "task-name": {
+        "task": "courses.tasks.send_mail_about_updates",
+        "schedule": timedelta(minutes=1),
+    },
+}
+
+if "test" in sys.argv:
+    CELERY_TASK_ALWAYS_EAGER = True
+
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_TIMEZONE = "Asia/Yekaterinburg"
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 30 * 60
+
+EMAIL_USE_TLS = False
+EMAIL_USE_SSL = True
