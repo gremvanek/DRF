@@ -6,12 +6,18 @@ FROM python:3.12
 ENV PYTHONUNBUFFERED 1
 
 # Устанавливаем рабочую директорию в контейнере
-WORKDIR /OnlineTraining
+WORKDIR /DRF_Django
 
-# Копируем зависимости и код приложения
-COPY ./requirements.txt /OnlineTraining/
-RUN pip install -r /OnlineTraining/requirements.txt
-COPY . .
+# Копируем файлы pyproject.toml и poetry.lock
+COPY pyproject.toml poetry.lock /DRF_Django/
+
+# Устанавливаем Poetry и используем его для установки зависимостей
+RUN pip install poetry
+RUN poetry config virtualenvs.create false
+RUN poetry install --no-root --no-interaction
+
+# Копируем остальные файлы приложения
+COPY . /DRF_Django/
 
 # Команда для запуска Django-сервера
-# CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
