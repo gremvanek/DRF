@@ -45,7 +45,7 @@ services:
   celery:
     build: .
     tty: true
-    command: celery -A config worker -l INFO
+    command: celery -A drf worker -l INFO
     env_file:
       - .env
     depends_on:
@@ -55,7 +55,7 @@ services:
   celery_beat:
     build: .
     tty: true
-    command: celery -A config beat -l INFO -S django
+    command: celery -A drf beat -l INFO -S django
     env_file:
       - .env
     depends_on:
