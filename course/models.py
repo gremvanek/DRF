@@ -36,7 +36,7 @@ class Lesson(models.Model):
     preview = models.ImageField(upload_to="lessons/", verbose_name="Превью", **NULLABLE)
     video_url = models.URLField(verbose_name="URL видео", **NULLABLE)
     link = models.URLField(verbose_name="Ссылка", **NULLABLE)  # Добавлено поле link
-    course = models.ForeignKey(Course, on_delete=models.CASCADE, verbose_name="lessons")
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, verbose_name="lessons", **NULLABLE)
     owner = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, **NULLABLE
     )

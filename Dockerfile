@@ -1,5 +1,5 @@
 # Используем базовый образ Python
-FROM python:3.12
+FROM python:3.12-slim
 
 # Устанавливает переменную окружения, которая гарантирует, что вывод из python
 # будет отправлен прямо в терминал без предварительной буферизации
@@ -12,9 +12,10 @@ WORKDIR /DRF_Django
 COPY pyproject.toml poetry.lock /DRF_Django/
 
 # Устанавливаем Poetry и используем его для установки зависимостей
+RUN pip install --upgrade pip
 RUN pip install poetry
 RUN poetry config virtualenvs.create false
-RUN poetry install --no-root --no-interaction
+RUN poetry install --no-root
 
 # Копируем остальные файлы приложения
 COPY . /DRF_Django/
